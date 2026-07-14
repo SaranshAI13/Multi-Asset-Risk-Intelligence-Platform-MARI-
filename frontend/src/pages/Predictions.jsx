@@ -12,6 +12,7 @@ export default function Predictions() {
   const [allAssetsMap, setAllAssetsMap] = useState({})
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [timeframe, setTimeframe] = useState('1m') // '1w' | '1m'
 
   useEffect(() => {
     fetchAssets().then(r => {
@@ -37,13 +38,13 @@ export default function Predictions() {
 
   return (
     <div>
-      {/* Page Header with Search */}
+      {/* Page Header */}
       <div className="page-header" style={{ zIndex: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <div className="page-title">Risk & Price Predictions</div>
             <div className="page-subtitle">
-              1-Month expected move bounds · Value at Risk (VaR) · Geopolitical Risk Modeling
+              Short-term expected moves · Value at Risk (VaR) · Tail Risk Projections
             </div>
           </div>
 
@@ -154,139 +155,225 @@ export default function Predictions() {
 
       {data && !loading && (
         <>
-          {data.latest_price && (
-            <div className="card" style={{ marginBottom: 24, borderLeft: '3px solid var(--cyan)' }}>
-              <div className="section-header" style={{ margin: '0 0 16px', color: 'var(--cyan)' }}>
-                1-Month Expected Price Bounds & Risk Projections
-              </div>
-              
-              {(() => {
-                const s0 = data.latest_price
-                const volDec = data.ml_gbm?.point_forecast ?? data.garch?.point_forecast ?? 0.15
-                // 1 Month trading days = 21, annual trading days = 252
-                const t = 21 / 252
-                const vol1m = volDec * Math.sqrt(t)
-                
-                // 1 Std Dev Bounds (68% probability)
-                const up1 = s0 * (1 + vol1m)
-                const lo1 = s0 * (1 - vol1m)
-                
-                // 2 Std Dev Bounds (95% probability)
-                const up2 = s0 * (1 + 2 * vol1m)
-                const lo2 = s0 * (1 - 2 * vol1m)
-                
-                // Value at Risk (VaR) 95% over 1 month
-                const var95 = 1.645 * vol1m
-                // CVaR 95% (expected loss if VaR is breached)
-                const cvar95 = 2.062 * vol1m
+          {/* Timeframe Selector Tab Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button 
+                onClick={() => setTimeframe('1w')}
+                style={{
+                  background: timeframe === '1w' ? 'var(--amber)' : 'rgba(255,255,255,0.04)',
+                  color: timeframe === '1w' ? '#060b14' : 'var(--text-primary)',
+                  border: '1px solid ' + (timeframe === '1w' ? 'var(--amber)' : 'rgba(255,255,255,0.08)'),
+                  padding: '10px 20px',
+                  borderRadius: '8px',
+                  fontSize: 12,
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                📅 1 Week Projection (5 Trading Days)
+              </button>
+              <button 
+                onClick={() => setTimeframe('1m')}
+                style={{
+                  background: timeframe === '1m' ? 'var(--amber)' : 'rgba(255,255,255,0.04)',
+                  color: timeframe === '1m' ? '#060b14' : 'var(--text-primary)',
+                  border: '1px solid ' + (timeframe === '1m' ? 'var(--amber)' : 'rgba(255,255,255,0.08)'),
+                  padding: '10px 20px',
+                  borderRadius: '8px',
+                  fontSize: 12,
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                📅 1 Month Projection (21 Trading Days)
+              </button>
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontStyle: 'italic', maxWidth: 450, textAlign: 'right' }}>
+              * Long-term predictions are omitted because forecast errors compound and volatility models degrade rapidly over extended horizons.
+            </div>
+          </div>
 
-                return (
-                  <div>
-                    {/* Top Row: Current Asset Info */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                      <div>
-                        <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>Current Price</div>
-                        <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', marginTop: 2 }}>
-                          ${s0.toFixed(2)}
-                        </div>
-                      </div>
-                      <div>
-                        <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>ML Vol Forecast (Annualised)</div>
-                        <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--green)', marginTop: 2 }}>
-                          {(volDec * 100).toFixed(1)}%
-                        </div>
-                      </div>
-                      <div>
-                        <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>Projected 1-Month Move (1σ)</div>
-                        <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--amber)', marginTop: 2 }}>
-                          ±{(vol1m * 100).toFixed(2)}%
-                        </div>
-                      </div>
+          {data.latest_price && (() => {
+            const s0 = data.latest_price
+            const volDec = data.ml_gbm?.point_forecast ?? data.garch?.point_forecast ?? 0.15
+            // Compute days count based on selected tab
+            const days = timeframe === '1w' ? 5 : 21
+            const t = days / 252
+            const volT = volDec * Math.sqrt(t)
+
+            // expected moves in percentage
+            const pctMove = volT * 100
+
+            // 1 Std Dev Bounds (68% probability)
+            const up1 = s0 * (1 + volT)
+            const lo1 = s0 * (1 - volT)
+
+            // 2 Std Dev Bounds (95% probability)
+            const up2 = s0 * (1 + 2 * volT)
+            const lo2 = s0 * (1 - 2 * volT)
+
+            // Value at Risk (VaR) 95% over timeframe
+            const var95 = 1.645 * volT
+            // CVaR 95% (expected tail loss if VaR is breached)
+            const cvar95 = 2.062 * volT
+
+            const labelTime = timeframe === '1w' ? '1 Week' : '1 Month'
+
+            return (
+              <div className="grid-2-1" style={{ gap: 20 }}>
+                {/* LEFT COLUMN: Expected price bounds & Final Verdict */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  
+                  {/* Final Verdict Card */}
+                  <div className="card" style={{ borderLeft: '4px solid var(--green)', padding: 24 }}>
+                    <div className="card-title" style={{ color: 'var(--green)', fontSize: 10, letterSpacing: 2 }}>🔮 Forecast Verdict</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.5, marginTop: 8 }}>
+                      Based on current volatility levels, {ticker} is projected to trade between{' '}
+                      <span style={{ color: 'var(--red)', fontFamily: 'var(--font-mono)' }}>${lo1.toFixed(2)}</span>{' '}
+                      and{' '}
+                      <span style={{ color: 'var(--green)', fontFamily: 'var(--font-mono)' }}>${up1.toFixed(2)}</span>{' '}
+                      with <span style={{ color: 'var(--amber)' }}>68% probability</span> over the next {labelTime}.
                     </div>
-
-                    {/* Price Bounds Grid */}
-                    <div className="grid-2" style={{ marginBottom: 20 }}>
-                      {/* 68% Confidence (1 Std Dev) */}
-                      <div style={{ padding: 14, background: 'rgba(255,165,0,0.02)', border: '1px solid rgba(255,165,0,0.1)', borderRadius: 8 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--amber)', fontFamily: 'var(--font-mono)' }}>68% EXPECTED RANGE (1σ)</span>
-                          <span className="badge badge-amber" style={{ fontSize: 9 }}>Normal Move</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Upper Boundary:</span>
-                          <span style={{ fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--green)' }}>
-                            ${up1.toFixed(2)} <span style={{ fontSize: 10, fontWeight: 400 }}>(+{(vol1m * 100).toFixed(1)}%)</span>
-                          </span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Lower Boundary:</span>
-                          <span style={{ fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--red)' }}>
-                            ${lo1.toFixed(2)} <span style={{ fontSize: 10, fontWeight: 400 }}>(-{(vol1m * 100).toFixed(1)}%)</span>
-                          </span>
-                        </div>
+                    <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
+                      <div>
+                        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Expected Upside:</span>
+                        <span style={{ marginLeft: 6, color: 'var(--green)', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
+                          +{pctMove.toFixed(2)}%
+                        </span>
                       </div>
-
-                      {/* 95% Confidence (2 Std Dev) */}
-                      <div style={{ padding: 14, background: 'rgba(0,212,255,0.02)', border: '1px solid rgba(0,212,255,0.1)', borderRadius: 8 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--cyan)', fontFamily: 'var(--font-mono)' }}>95% EXPECTED RANGE (2σ)</span>
-                          <span className="badge badge-cyan" style={{ fontSize: 9 }}>Extreme Move</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Upper Boundary:</span>
-                          <span style={{ fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--green)' }}>
-                            ${up2.toFixed(2)} <span style={{ fontSize: 10, fontWeight: 400 }}>(+{((2 * vol1m) * 100).toFixed(1)}%)</span>
-                          </span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Lower Boundary:</span>
-                          <span style={{ fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--red)' }}>
-                            ${lo2.toFixed(2)} <span style={{ fontSize: 10, fontWeight: 400 }}>(-{((2 * vol1m) * 100).toFixed(1)}%)</span>
-                          </span>
-                        </div>
+                      <div>
+                        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Expected Downside:</span>
+                        <span style={{ marginLeft: 6, color: 'var(--red)', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
+                          -{pctMove.toFixed(2)}%
+                        </span>
                       </div>
-                    </div>
-
-                    {/* VaR & CVaR Grid */}
-                    <div className="grid-2" style={{ marginBottom: 20 }}>
-                      <div style={{ padding: 12, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8 }}>
-                        <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', marginBottom: 4 }}>Value at Risk (VaR) 95%</div>
-                        <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--red)' }}>
-                          {(var95 * 100).toFixed(2)}%
-                        </div>
-                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.3 }}>
-                          Maximum expected loss of capital over 30 days with 95% confidence under normal market conditions.
-                        </div>
-                      </div>
-                      <div style={{ padding: 12, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8 }}>
-                        <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', marginBottom: 4 }}>Conditional VaR (CVaR) 95%</div>
-                        <div style={{ fontSize: 18, fontWeight: 800, color: '#ff6666' }}>
-                          {(cvar95 * 100).toFixed(2)}%
-                        </div>
-                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.3 }}>
-                          Expected average loss in the worst 5% of outcomes (tail risk) if the 95% threshold is breached.
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Warning Alerts / Disclaimers in Mixed English/Hindi */}
-                    <div style={{
-                      padding: '12px 16px',
-                      background: 'rgba(255,68,68,0.05)',
-                      border: '1px solid rgba(255,68,68,0.2)',
-                      borderRadius: 8,
-                      color: 'var(--text-primary)',
-                      fontSize: 11,
-                      lineHeight: 1.5,
-                      fontFamily: 'var(--font-mono)'
-                    }}>
-                      <strong style={{ color: 'var(--red)' }}>⚠️ IMPORTANT RISK WARNING:</strong> Geopolitical events (jaise US strikes, trade wars, military conflicts), extreme macroeconomic data updates, central bank rate decisions, ya black swan triggers market me instantaneous and unpredictable volatility spikes generate kar sakte hain. Boundaries values purely statistical patterns aur historical volatility inputs pe base hain - real market moves isse exact reverse ya drastically higher/lower ranges breach kar sakte hain. Invest carefully!
                     </div>
                   </div>
-                );
-              })()}
-            </div>
-          )}
+
+                  {/* 68% Confidence interval card */}
+                  <div className="card" style={{ borderLeft: '3px solid var(--amber)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--amber)', fontFamily: 'var(--font-mono)', letterSpacing: 1.5 }}>
+                        68% CONFIDENCE RANGE (1 Standard Deviation)
+                      </span>
+                      <span className="badge badge-amber">Normal Bounds</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Upper Limit:</span>
+                        <span style={{ fontSize: 18, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--green)' }}>
+                          ${up1.toFixed(2)} <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>(+{pctMove.toFixed(1)}%)</span>
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Lower Limit:</span>
+                        <span style={{ fontSize: 18, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--red)' }}>
+                          ${lo1.toFixed(2)} <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>(-{pctMove.toFixed(1)}%)</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 95% Confidence interval card */}
+                  <div className="card" style={{ borderLeft: '3px solid var(--cyan)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--cyan)', fontFamily: 'var(--font-mono)', letterSpacing: 1.5 }}>
+                        95% CONFIDENCE RANGE (2 Standard Deviations)
+                      </span>
+                      <span className="badge badge-cyan">Extreme Bounds</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Upper Limit:</span>
+                        <span style={{ fontSize: 18, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--green)' }}>
+                          ${up2.toFixed(2)} <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>(+{ (2 * pctMove).toFixed(1) }%)</span>
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Lower Limit:</span>
+                        <span style={{ fontSize: 18, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--red)' }}>
+                          ${lo2.toFixed(2)} <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>(-{ (2 * pctMove).toFixed(1) }%)</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* RIGHT COLUMN: Risk Metrics & Explanations */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  
+                  {/* VaR & CVaR */}
+                  <div className="card">
+                    <div className="section-header" style={{ margin: '0 0 14px' }}>Tail Risk Metrics ({labelTime})</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>Value at Risk (95% VaR)</span>
+                          <span style={{ fontSize: 14, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--red)' }}>
+                            {(var95 * 100).toFixed(2)}%
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.3 }}>
+                          Meaning: There is a 5% chance that the asset loses more than {(var95 * 100).toFixed(1)}% of its value during this period.
+                        </div>
+                      </div>
+
+                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 12 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>Conditional VaR (CVaR)</span>
+                          <span style={{ fontSize: 14, fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#ff6666' }}>
+                            {(cvar95 * 100).toFixed(2)}%
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.3 }}>
+                          Meaning: If the worst 5% case occurs, the expected average loss is {(cvar95 * 100).toFixed(1)}%. This measures extreme tail events.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Noob explanations */}
+                  <div className="card" style={{ background: 'rgba(10,20,35,0.3)' }}>
+                    <div className="section-header" style={{ margin: '0 0 12px' }}>How it works (for beginners)</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 11, lineHeight: 1.4, color: 'var(--text-secondary)' }}>
+                      <div>
+                        <strong style={{ color: 'var(--amber)', fontFamily: 'var(--font-mono)' }}>68% Probability (1σ)</strong>
+                        <p style={{ marginTop: 2 }}>In statistics, 1 standard deviation contains 68% of possible price path outcomes. This represents the typical price boundaries of normal trading activity.</p>
+                      </div>
+                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8 }}>
+                        <strong style={{ color: 'var(--cyan)', fontFamily: 'var(--font-mono)' }}>95% Probability (2σ)</strong>
+                        <p style={{ marginTop: 2 }}>2 standard deviations cover 95% of expected outcomes. Breaking these bounds implies a highly anomalous market event (e.g. panic selloff or hype bubble).</p>
+                      </div>
+                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8 }}>
+                        <strong style={{ color: 'var(--green)', fontFamily: 'var(--font-mono)' }}>GBM & Volatility Inputs</strong>
+                        <p style={{ marginTop: 2 }}>We take the ML model's volatility forecast and project the variance over {labelTime} using the square root of time scaling formula: <code style={{ color: 'var(--cyan)' }}>σ * √t</code>.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* CRITICAL RISK WARNING BOX */}
+          <div style={{
+            marginTop: 24,
+            padding: '16px 20px',
+            background: 'rgba(255,68,68,0.05)',
+            border: '1px solid rgba(255,68,68,0.2)',
+            borderRadius: 10,
+            color: 'var(--text-primary)',
+            fontSize: 12,
+            lineHeight: 1.5,
+            fontFamily: 'var(--font-mono)'
+          }}>
+            <span style={{ color: 'var(--red)', fontWeight: 800 }}>⚠️ CRITICAL RISK WARNING (ENGLISH):</span> Geopolitical shocks (such as military actions, strikes, or trade conflicts), major macroeconomic policy updates, central bank rate shifts, or systemic black swan events can override statistical forecasts instantaneously. The calculations presented here are strictly statistical estimates representing normal market conditions. They do NOT guarantee future price limits or absolute capital safety. Invest responsibly and use hedging strategies where possible.
+          </div>
         </>
       )}
     </div>
