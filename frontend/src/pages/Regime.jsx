@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchRegime } from '../api'
+import { fetchRegime, fetchAssets } from '../api'
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from 'recharts'
@@ -39,6 +39,21 @@ export default function Regime() {
   const [data,    setData]    = useState(null)
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState(null)
+  const [allAssetsMap, setAllAssetsMap] = useState({})
+  const [isOpen, setIsOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  useEffect(() => {
+    fetchAssets().then(r => {
+      setAllAssetsMap(r.data.assets)
+    }).catch(() => {})
+  }, [])
+
+  const tickersList = Object.keys(allAssetsMap).length > 0 ? Object.keys(allAssetsMap) : ASSETS;
+  const filteredTickers = tickersList.filter(t => {
+    const name = allAssetsMap[t]?.name || '';
+    return t.toLowerCase().includes(searchTerm.toLowerCase()) || name.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   const load = (t) => {
     setLoading(true); setError(null); setData(null)
@@ -74,9 +89,102 @@ export default function Regime() {
               KMeans clustering · 3 regimes · Rolling vol + momentum features · Transition matrix
             </div>
           </div>
-          <select value={ticker} onChange={e => setTicker(e.target.value)} style={{ minWidth: 160 }}>
-            {ASSETS.map(a => <option key={a} value={a}>{a}</option>)}
-          </select>
+          
+          {/* Custom Searchable Dropdown */}
+          <div style={{ position: 'relative', width: 240, zIndex: 1000 }}>
+            <div 
+              onClick={() => setIsOpen(!isOpen)}
+              style={{
+                background: 'var(--surface-light)',
+                border: '1px solid var(--border)',
+                borderRadius: '4px',
+                padding: '8px 12px',
+                fontSize: 12,
+                fontFamily: 'var(--font-mono)',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                userSelect: 'none'
+              }}
+            >
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '90%' }}>
+                {ticker} - {allAssetsMap[ticker]?.name || 'Loading...'}
+              </span>
+              <span style={{ fontSize: 9, color: 'var(--text-secondary)' }}>▼</span>
+            </div>
+
+            {isOpen && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                marginTop: 4,
+                background: '#0d1117',
+                border: '1px solid var(--border)',
+                borderRadius: '4px',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                maxHeight: 240,
+                display: 'flex',
+                flexDirection: 'column',
+                zIndex: 1001,
+              }}>
+                <input 
+                  type="text" 
+                  placeholder="Search ticker or name..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  onClick={e => e.stopPropagation()}
+                  style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    border: 'none',
+                    borderBottom: '1px solid var(--border)',
+                    color: 'var(--text-primary)',
+                    padding: '8px 12px',
+                    fontSize: 12,
+                    fontFamily: 'var(--font-mono)',
+                    outline: 'none',
+                  }}
+                />
+                <div style={{ overflowY: 'auto', flex: 1 }}>
+                  {filteredTickers.length === 0 ? (
+                    <div style={{ padding: '8px 12px', fontSize: 11, color: 'var(--text-secondary)' }}>No results found</div>
+                  ) : (
+                    filteredTickers.map(t => (
+                      <div 
+                        key={t}
+                        onClick={() => {
+                          setTicker(t)
+                          setIsOpen(false)
+                          setSearchTerm('')
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          fontSize: 11,
+                          cursor: 'pointer',
+                          fontFamily: 'var(--font-mono)',
+                          color: t === ticker ? 'var(--amber)' : 'var(--text-primary)',
+                          background: t === ticker ? 'rgba(255,165,0,0.05)' : 'transparent',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          transition: 'background 0.2s',
+                          borderBottom: '1px solid rgba(255,255,255,0.02)'
+                        }}
+                        onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                        onMouseOut={e => e.currentTarget.style.background = t === ticker ? 'rgba(255,165,0,0.05)' : 'transparent'}
+                      >
+                        <span style={{ fontWeight: 700 }}>{t}</span>
+                        <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>{allAssetsMap[t]?.name || t}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
 
@@ -109,6 +217,9 @@ export default function Regime() {
                 20-Day Realised Vol: <span style={{ color: regimeColor, fontWeight: 700 }}>
                   {(data.current_rv * 100).toFixed(1)}%
                 </span>
+              </div>
+              <div style={{ marginTop: 12, fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8 }}>
+                * KMeans Clustering is an unsupervised ML model that segments market historical data into distinct volatility states (Low, Medium, and High Risk) without manual rules.
               </div>
             </div>
           </div>
@@ -187,6 +298,9 @@ export default function Regime() {
                 </div>
               ))}
             </div>
+            <div style={{ marginTop: 14, fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8, textAlign: 'center' }}>
+              * This historical chart maps realized volatility colored by its detected market regime. The colors indicate periods of market tranquility (green), corrections (orange), and panic (red).
+            </div>
           </div>
 
           {/* Transition Matrix */}
@@ -229,6 +343,9 @@ export default function Regime() {
                       ))}
                     </tbody>
                   </table>
+                  <div style={{ marginTop: 12, fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8 }}>
+                    * Transition probabilities measure the likelihood of the market moving from one regime (row) to another (column) tomorrow. High diagonal values represent state stickiness (persistence).
+                  </div>
                 </div>
 
                 {/* Duration Stats */}
@@ -256,6 +373,9 @@ export default function Regime() {
                       ))}
                     </tbody>
                   </table>
+                  <div style={{ marginTop: 12, fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8 }}>
+                    * Expected stay duration of each regime calculated from transition matrix stay probabilities. Occurrences indicate how many times the state was visited over the 2-year history.
+                  </div>
                 </div>
               </div>
             </>
