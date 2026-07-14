@@ -4,16 +4,18 @@ import Dashboard   from './pages/Dashboard'
 import Volatility  from './pages/Volatility'
 import Portfolio   from './pages/Portfolio'
 import Regime      from './pages/Regime'
+import Predictions from './pages/Predictions'
 import CommandPalette from './components/CommandPalette'
 import ToastManager   from './components/ToastManager'
 import SplashScreen   from './components/SplashScreen'
 import './index.css'
 
 const NAV = [
-  { to: '/',           icon: '⬡', label: 'Overview'   },
-  { to: '/volatility', icon: '📈', label: 'Volatility'  },
-  { to: '/portfolio',  icon: '⚖️', label: 'Portfolio'   },
-  { to: '/regime',     icon: '🎯', label: 'Regime'      },
+  { to: '/',            icon: '⬡', label: 'Overview'    },
+  { to: '/volatility',  icon: '📈', label: 'Volatility'  },
+  { to: '/predictions', icon: '🔮', label: 'Predictions' },
+  { to: '/portfolio',   icon: '⚖️', label: 'Portfolio'   },
+  { to: '/regime',      icon: '🎯', label: 'Regime'      },
 ]
 
 function Sidebar({ onOpenCmd, theme, toggleTheme }) {
@@ -230,6 +232,7 @@ function AppInner() {
         <Routes>
           <Route path="/"           element={<Dashboard  />} />
           <Route path="/volatility" element={<Volatility />} />
+          <Route path="/predictions" element={<Predictions />} />
           <Route path="/portfolio"  element={<Portfolio  />} />
           <Route path="/regime"     element={<Regime     />} />
         </Routes>

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 const PAGES = [
   { label: 'Overview Dashboard',     path: '/',           icon: '⬡', desc: 'Live quotes, KPIs, volatility bar chart' },
   { label: 'ML Volatility Forecast', path: '/volatility', icon: '📈', desc: 'GARCH vs GBM, feature importance' },
+  { label: 'Risk & Price Predictions', path: '/predictions', icon: '🔮', desc: 'Expected move boundaries, VaR, CVaR projections' },
   { label: 'Portfolio Optimizer',    path: '/portfolio',  icon: '⚖️', desc: 'Markowitz, efficient frontier, risk parity' },
   { label: 'Market Regime',          path: '/regime',     icon: '🎯', desc: 'KMeans clustering, transition matrix' },
 ]
