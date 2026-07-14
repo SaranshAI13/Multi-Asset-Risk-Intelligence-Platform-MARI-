@@ -236,33 +236,33 @@ export default function Predictions() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                   
                   {/* Final Verdict Card */}
-                  <div className="card" style={{ borderLeft: '4px solid var(--cyan)', padding: 24 }}>
-                    <div className="card-title" style={{ color: 'var(--cyan)', fontSize: 10, letterSpacing: 2 }}>🔮 MARI FORECAST VERDICT (95% PROBABILITY)</div>
+                  <div className="card" style={{ borderLeft: '4px solid var(--amber)', padding: 24 }}>
+                    <div className="card-title" style={{ color: 'var(--amber)', fontSize: 10, letterSpacing: 2 }}>🔮 MARI FORECAST VERDICT (68% PROBABILITY)</div>
                     <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.5, marginTop: 8 }}>
-                      Based on current machine learning volatility models, MARI projects with <span style={{ color: 'var(--cyan)' }}>95% extreme confidence</span> that {ticker} will trade between{' '}
-                      <span style={{ color: 'var(--red)', fontFamily: 'var(--font-mono)' }}>${lo2.toFixed(2)}</span>{' '}
+                      Based on current machine learning volatility models, MARI projects with <span style={{ color: 'var(--amber)' }}>68% standard confidence</span> that {ticker} will trade between{' '}
+                      <span style={{ color: 'var(--red)', fontFamily: 'var(--font-mono)' }}>${lo1.toFixed(2)}</span>{' '}
                       and{' '}
-                      <span style={{ color: 'var(--green)', fontFamily: 'var(--font-mono)' }}>${up2.toFixed(2)}</span>{' '}
+                      <span style={{ color: 'var(--green)', fontFamily: 'var(--font-mono)' }}>${up1.toFixed(2)}</span>{' '}
                       over the next {labelTime}.
                     </div>
                     <div style={{ display: 'flex', gap: 24, marginTop: 16, borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 12 }}>
                       <div>
-                        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Expected Max Upside (2σ):</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Expected Upside (1σ):</span>
                         <span style={{ marginLeft: 6, color: 'var(--green)', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
-                          +{ (2 * pctMove).toFixed(2) }%
+                          +{pctMove.toFixed(2)}%
                         </span>
                       </div>
                       <div>
-                        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Expected Max Downside (2σ):</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Expected Downside (1σ):</span>
                         <span style={{ marginLeft: 6, color: 'var(--red)', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
-                          -{ (2 * pctMove).toFixed(2) }%
+                          -{pctMove.toFixed(2)}%
                         </span>
                       </div>
                     </div>
                     
                     {/* Final Expected Price Verdict Section */}
-                    <div style={{ marginTop: 16, padding: '14px 16px', background: 'rgba(0, 212, 255, 0.05)', border: '1px solid rgba(0, 212, 255, 0.2)', borderRadius: 8 }}>
-                      <div style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>
+                    <div style={{ marginTop: 16, padding: '14px 16px', background: 'rgba(255, 165, 0, 0.03)', border: '1px solid rgba(255, 165, 0, 0.15)', borderRadius: 8 }}>
+                      <div style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--amber)', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>
                         MARI Expected Price Verdict ({labelTime})
                       </div>
                       
