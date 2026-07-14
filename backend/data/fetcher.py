@@ -84,6 +84,8 @@ def get_cached_prices(ticker: str, period: str = "2y") -> pd.DataFrame:
         _price_cache[cache_key] = (now, df)
         return df
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise RuntimeError(f"Failed to fetch data for {ticker}: {e}")
 
 
