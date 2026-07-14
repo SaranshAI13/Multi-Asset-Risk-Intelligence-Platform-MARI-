@@ -6,9 +6,10 @@ import {
 } from 'recharts'
 
 const ALL_ASSETS = [
-  'SPY','QQQ','GLD','TLT','IWM','EEM','HYG','VNQ',
-  'XLE','XLK','XLF','XLV','BTC-USD','ETH-USD','GC=F','CL=F','SLV','USO',
-  'XLY','XLP'
+  'SPY', 'QQQ', 'IWM', 'EEM', 'GLD', 'SLV', 'USO', 'TLT', 'HYG', 'VNQ',
+  'XLE', 'XLF', 'XLK', 'XLV', 'DIA', 'IAU', 'INDA', 'VIXY', 'ARKK', 'UUP',
+  'XLY', 'XLP', 'BTC-USD', 'ETH-USD', 'SOL-USD', 'GC=F', 'SI=F', 'CL=F',
+  'NG=F', 'HG=F', 'PA=F', 'ZC=F'
 ]
 const COLORS = ['#ffa500','#00ff88','#4da6ff','#ff4444','#cc44ff','#ffcc44','#44ffcc','#ff8844']
 
@@ -186,6 +187,9 @@ export default function Portfolio() {
             <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div className="section-header" style={{ margin: '0 0 16px', alignSelf: 'flex-start' }}>Optimal Weights</div>
               {current && <WeightPie weights={current.weights} />}
+              <div style={{ marginTop: 12, fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8, width: '100%' }}>
+                * Optimal weights show the percentage of capital allocated to each selected asset under the selected strategy.
+              </div>
             </div>
 
             {/* Efficient Frontier */}
@@ -208,6 +212,9 @@ export default function Portfolio() {
                   />
                 </ScatterChart>
               </ResponsiveContainer>
+              <div style={{ marginTop: 12, fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8 }}>
+                * The Frontier curve maps the highest expected returns for given volatility risk. Higher-left portfolios are superior.
+              </div>
             </div>
           </div>
 
@@ -242,6 +249,9 @@ export default function Portfolio() {
                       ))}
                   </tbody>
                 </table>
+                <div style={{ marginTop: 12, fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8 }}>
+                  * Risk Contribution measures how much of the portfolio's total volatility is driven by each asset, combining its weight, individual volatility, and covariance.
+                </div>
               </div>
             </>
           )}
@@ -283,6 +293,9 @@ export default function Portfolio() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+                <div style={{ marginTop: 12, fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8 }}>
+                  * Correlation measures price co-movement from -1.0 (opposite) to +1.0 (lockstep). Low/negative correlation increases diversification.
                 </div>
               </div>
             </>
