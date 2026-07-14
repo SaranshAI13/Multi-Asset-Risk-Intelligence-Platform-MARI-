@@ -33,6 +33,8 @@ ASSETS = {
     "VIXY":  {"name": "Volatility Index ETF",  "category": "ETF",       "emoji": "🎢"},
     "ARKK":  {"name": "ARK Innovation ETF",    "category": "ETF",       "emoji": "🚀"},
     "UUP":   {"name": "US Dollar Index",       "category": "ETF",       "emoji": "💵"},
+    "XLY":   {"name": "Consumer Discretionary ETF", "category": "ETF",       "emoji": "🛍️"},
+    "XLP":   {"name": "Consumer Staples ETF",       "category": "ETF",       "emoji": "🛒"},
     # Crypto
     "BTC-USD": {"name": "Bitcoin",             "category": "Crypto",    "emoji": "₿"},
     "ETH-USD": {"name": "Ethereum",            "category": "Crypto",    "emoji": "Ξ"},

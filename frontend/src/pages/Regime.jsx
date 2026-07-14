@@ -4,7 +4,7 @@ import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from 'recharts'
 
-const ASSETS = ['SPY','QQQ','GLD','TLT','BTC-USD','GC=F','ETH-USD','IWM','USO','EEM']
+const ASSETS = ['SPY','QQQ','GLD','TLT','BTC-USD','GC=F','ETH-USD','IWM','USO','EEM','XLY','XLP']
 
 const REGIME_BG = {
   'LOW RISK':    'rgba(0,255,136,0.08)',

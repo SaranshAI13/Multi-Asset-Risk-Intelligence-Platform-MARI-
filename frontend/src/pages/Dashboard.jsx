@@ -7,36 +7,134 @@ import {
 const CATEGORY_COLOR = { ETF: '#ffa500', Crypto: '#4da6ff', Commodity: '#00ff88' }
 
 const ASSET_INFO = {
-  "SPY": { desc: "S&P 500 ETF. The benchmark for the overall US economy.", drivers: "Interest rates, corporate earnings, GDP growth." },
-  "QQQ": { desc: "Nasdaq 100 ETF. High concentration in Big Tech (Apple, Microsoft, Nvidia).", drivers: "Tech earnings, AI trends, treasury yields." },
-  "IWM": { desc: "Russell 2000 ETF. Tracks small-cap US companies.", drivers: "Domestic economy strength, bank lending rates." },
-  "EEM": { desc: "Emerging Markets ETF. Tracks China, India, Taiwan, etc.", drivers: "US Dollar strength, global trade, China policy." },
-  "GLD": { desc: "Gold ETF. Safe haven asset.", drivers: "Inflation fears, geopolitical tension, dropping real yields." },
-  "SLV": { desc: "Silver ETF. Both a precious metal and industrial metal.", drivers: "Manufacturing demand (solar/electronics), inflation." },
-  "USO": { desc: "Oil ETF. Tracks crude oil futures.", drivers: "OPEC supply, global travel, recession fears." },
-  "TLT": { desc: "20yr Treasury ETF. Extremely sensitive to interest rates.", drivers: "Federal Reserve policy, inflation data." },
-  "HYG": { desc: "High Yield Corporate Bond ETF. 'Junk' bonds.", drivers: "Corporate default risk, stock market health." },
-  "VNQ": { desc: "Real Estate ETF. Tracks REITs.", drivers: "Mortgage rates, commercial real estate occupancy." },
-  "XLE": { desc: "Energy Sector ETF. Big oil companies like Exxon.", drivers: "Oil prices, regulatory environment." },
-  "XLF": { desc: "Financials ETF. Big banks like JPMorgan.", drivers: "Yield curve steepness, loan default rates." },
-  "XLK": { desc: "Technology ETF. Software and hardware.", drivers: "Innovation cycles, capital expenditure." },
-  "XLV": { desc: "Healthcare ETF. Pharma and managed care.", drivers: "Drug approvals, government policy." },
-  "DIA": { desc: "Dow Jones ETF. Top 30 blue-chip US companies.", drivers: "Industrial output, consumer spending." },
-  "IAU": { desc: "iShares Gold Trust. Alternative to GLD.", drivers: "Same as GLD." },
-  "BTC-USD": { desc: "Bitcoin. The largest cryptocurrency.", drivers: "Adoption, liquidity, halving cycles, regulation." },
-  "ETH-USD": { desc: "Ethereum. Smart contract platform.", drivers: "DeFi usage, gas fees, staking yields." },
-  "SOL-USD": { desc: "Solana. High-speed layer-1 blockchain.", drivers: "Network activity, meme coin volume." },
-  "GC=F": { desc: "Gold Futures.", drivers: "Same as GLD but highly leveraged." },
-  "SI=F": { desc: "Silver Futures.", drivers: "Industrial demand." },
-  "CL=F": { desc: "Crude Oil Futures.", drivers: "OPEC, strategic reserves." },
-  "NG=F": { desc: "Natural Gas Futures.", drivers: "Weather forecasts, European energy supply." },
-  "HG=F": { desc: "Copper Futures. 'Dr. Copper'.", drivers: "Housing starts, EV production, Chinese infrastructure." },
-  "INDA": { desc: "MSCI India ETF. Tracks top Indian companies.", drivers: "RBI policy, monsoon, foreign institutional investment." },
-  "VIXY": { desc: "Volatility Index ETF. 'The Fear Gauge'.", drivers: "Market crashes, uncertainty, sudden news." },
-  "ARKK": { desc: "ARK Innovation ETF. Hyper-growth tech.", drivers: "Very sensitive to interest rates. Speculative." },
-  "UUP": { desc: "US Dollar Index. Tracks USD against a basket of currencies.", drivers: "Fed rate hikes, global crises." },
-  "PA=F": { desc: "Palladium Futures.", drivers: "Auto industry (catalytic converters), supply from Russia/South Africa." },
-  "ZC=F": { desc: "Corn Futures.", drivers: "Weather in the Midwest, ethanol demand, fertilizer prices." },
+  "SPY": {
+    desc: "SPDR S&P 500 ETF Trust. Listed on NYSE Arca, it is the oldest and largest ETF in the world, tracking the 500 largest US large-cap equities. It represents the primary benchmark for the health of the United States corporate sector and the global stock market.",
+    drivers: "Federal Reserve interest rate decisions, corporate quarterly earnings reports (EPS growth), US GDP growth rates, global trade sentiment, and headline macroeconomic indicators like inflation (CPI) and employment data."
+  },
+  "QQQ": {
+    desc: "Invesco QQQ Trust. Tracks the Nasdaq-100 Index, comprising the 100 largest non-financial corporations listed on the Nasdaq stock market. It is heavily weighted toward high-growth technology, hardware, and digital communication sectors.",
+    drivers: "Earnings reports of mega-cap tech giants (Apple, Microsoft, Nvidia), AI infrastructure spending cycles, 10-year US Treasury yields (tech stock valuations decrease when bond yields rise), and global semiconductor supply chains."
+  },
+  "IWM": {
+    desc: "iShares Russell 2000 ETF. Tracks the performance of 2,000 small-cap US public corporations. Small-cap stocks are highly sensitive to domestic economic health and have higher borrowing costs, making them leverage-sensitive.",
+    drivers: "Domestic economic expansion, regional banking credit availability, local consumption rates, and domestic credit spreads. Small-caps benefit during early economic cycles but suffer under high borrowing rates."
+  },
+  "EEM": {
+    desc: "iShares MSCI Emerging Markets ETF. Tracks large and mid-sized equities in emerging market economies like China, India, Taiwan, Brazil, and South Korea. It is listed on NYSE Arca and exposes investors to high-growth developing economies.",
+    drivers: "Strength of the US Dollar (a stronger dollar depresses emerging market asset prices due to dollar-denominated debt), Chinese industrial policy, global commodity price trends, and foreign capital flows."
+  },
+  "GLD": {
+    desc: "SPDR Gold Shares. The largest physically backed gold ETF in the world. It holds 100% physical gold bullion stored in secure London vaults, offering liquid exposure to spot gold prices without needing physical storage.",
+    drivers: "Geopolitical instability, real interest rates (gold has no yield, so when real yields drop, gold becomes highly attractive), global central bank gold purchasing trends, inflation expectations, and US Dollar movements."
+  },
+  "SLV": {
+    desc: "iShares Silver Trust. A physically backed silver ETF that tracks the spot price of silver bullion. Unlike gold, silver serves both as a monetary safe haven and a crucial industrial metal used in manufacturing and solar cells.",
+    drivers: "Industrial manufacturing demand (solar panels, electronics, EV components), precious metal safe-haven flows, inflation hedging, and global industrial manufacturing output index (PMI)."
+  },
+  "USO": {
+    desc: "United States Oil Fund. Designed to track the daily changes of West Texas Intermediate (WTI) light, sweet crude oil spot prices. It achieves this by holding and rolling near-month WTI crude oil futures contracts on the NYMEX.",
+    drivers: "OPEC+ oil production quotas, geopolitical supply shocks (Middle East, Russia), global industrial and travel demand, US shale oil production levels, and the value of the US Dollar."
+  },
+  "TLT": {
+    desc: "iShares 20+ Year Treasury Bond ETF. Tracks long-term US government bonds. Known as a primary safe-haven asset, it appreciates when stocks crash because investors flee to the absolute safety of US government debt.",
+    drivers: "Long-term inflation expectations, Federal Reserve monetary policy (rate cuts increase TLT price), term premium, and global risk-off sentiment during recessions or banking panics."
+  },
+  "HYG": {
+    desc: "iShares iBoxx $ High Yield Corporate Bond ETF. Tracks the liquid US high-yield (junk) corporate bond market. These bonds have lower credit ratings, offering high yields but carrying significant default risks.",
+    drivers: "Corporate default rate expectations, stock market volatility (high equity volatility triggers credit spread widening, dropping HYG), regional credit liquidity, and Fed rate cycles."
+  },
+  "VNQ": {
+    desc: "Vanguard Real Estate ETF. Tracks US Real Estate Investment Trusts (REITs) across residential, commercial, industrial, and healthcare real estate. REITs pay high dividends but are highly leverage-dependent.",
+    drivers: "Commercial and residential mortgage rates, physical occupancy levels, rent growth trends, and long-term interest rate yields (higher yields decrease REIT pricing relative to bonds)."
+  },
+  "XLE": {
+    desc: "Energy Select Sector SPDR Fund. Tracks major US oil, gas, and energy infrastructure firms, heavily dominated by oil giants like ExxonMobil and Chevron. Highly sensitive to global energy demand.",
+    drivers: "WTI and Brent crude oil spot prices, OPEC supply updates, global transport and airline traffic, refinery capacity bottlenecks, and clean energy transition policies."
+  },
+  "XLF": {
+    desc: "Financial Select Sector SPDR Fund. Tracks major US banks, insurance providers, investment funds, and credit card firms, dominated by JPMorgan Chase, Berkshire Hathaway, and Goldman Sachs.",
+    drivers: "Treasury yield curve steepness (banks borrow short-term and lend long-term; a steeper curve boosts profit margins), loan default rates, investment banking activity, and Fed capital requirements."
+  },
+  "XLK": {
+    desc: "Technology Select Sector SPDR Fund. Tracks large US technology companies across software, hardware, and semiconductor manufacturing, dominated by Microsoft, Apple, and Nvidia.",
+    drivers: "Enterprise IT spending, global semiconductor demand, AI software monetization cycles, and long-term bond yields (impacting growth stock valuations)."
+  },
+  "XLV": {
+    desc: "Healthcare Select Sector SPDR Fund. Tracks US pharmaceutical, biotech, and medical device corporations. It acts as a defensive sector, performing stably during recessions.",
+    drivers: "Demographic aging trends, FDA drug approval cycles, government healthcare spending policies (Medicare/Medicaid), and merger & acquisition (M&A) activity in biotech."
+  },
+  "DIA": {
+    desc: "SPDR Dow Jones Industrial Average ETF Trust. Tracks the 30 blue-chip, historically stable US industrial and consumer giants, providing a measure of large-scale US economic output.",
+    drivers: "Industrial manufacturing volumes, heavy capital expenditure cycles, global infrastructure demand, and consumer spending indices."
+  },
+  "IAU": {
+    desc: "iShares Gold Trust. A physically backed gold ETF that holds gold bullion in secure vaults globally, offering a low-cost, liquid alternative to GLD for long-term safe-haven asset allocation.",
+    drivers: "Real yields, inflation rates, central bank gold accumulation, geopolitical conflict levels, and US Dollar index strength."
+  },
+  "INDA": {
+    desc: "iShares MSCI India ETF. Tracks large and mid-sized Indian equities listed on the National Stock Exchange (NSE), exposing investors to India's high-growth consumer, technology, and financial sectors.",
+    drivers: "Reserve Bank of India (RBI) interest rate policy, global capital allocations to emerging markets, monsoon season performance (affecting rural GDP), and local corporate earnings trends."
+  },
+  "VIXY": {
+    desc: "ProShares VIX Short-Term Futures ETF. Tracks the S&P 500 VIX Short-Term Futures Index, providing exposure to market volatility. Known as 'The Fear Gauge', it spikes violently during stock crashes.",
+    drivers: "Sudden systemic market shocks, geopolitical crises, unexpected CPI inflation reports, and options market hedging volumes on the S&P 500."
+  },
+  "ARKK": {
+    desc: "ARK Innovation ETF. An actively managed fund that targets disruptive innovations, including genomics, autonomous vehicles, fintech, and web3. Highly speculative and volatile.",
+    drivers: "Growth stock liquidity, Federal Reserve rate cut cycles (low interest rates fuel speculative tech capital), venture capital flows, and retail trading enthusiasm."
+  },
+  "UUP": {
+    desc: "Invesco DB US Dollar Index Bullish Fund. Tracks the value of the US Dollar against a basket of six major global currencies (Euro, Yen, Pound, CAD, Krona, Franc).",
+    drivers: "Relative interest rate differentials (if the Fed raises rates faster than Europe, the USD strengthens), global risk-off flights to liquidity, and US balance of trade."
+  },
+  "XLY": {
+    desc: "Consumer Discretionary Select Sector SPDR Fund. Tracks US companies that sell non-essential goods and services (automobiles, retail, hotels, and travel), dominated by Amazon, Tesla, and Home Depot.",
+    drivers: "US consumer confidence indexes, household disposable income growth, credit card delinquency rates, and employment strength. Highly sensitive to economic recessions."
+  },
+  "XLP": {
+    desc: "Consumer Staples Select Sector SPDR Fund. Tracks US firms producing essential household goods (food, beverages, hygiene products, and tobacco), dominated by Procter & Gamble, Costco, and Walmart. A primary defensive equity sector.",
+    drivers: "Defensive asset flows during economic slowdowns, agricultural commodity input costs, household necessity demand, and dividend payout sustainability."
+  },
+  "BTC-USD": {
+    desc: "Bitcoin. The largest decentralized digital asset. It operates on a global proof-of-work blockchain network. Often referred to as 'digital gold', it acts as a decentralized store of value.",
+    drivers: "M2 global money supply expansions (liquidity injections), regulatory approvals of spot ETFs, institutional custody solutions, mining halving cycles (every 4 years), and risk-on market sentiment."
+  },
+  "ETH-USD": {
+    desc: "Ethereum. The leading decentralized smart contract platform. It hosts the majority of decentralized finance (DeFi), non-fungible tokens (NFTs), and Web3 applications using its native currency, Ether.",
+    drivers: "Network transaction fee levels (gas fees), smart contract developer activity, total value locked (TVL) in DeFi protocols, layer-2 scaling adoption, and staking yield rates."
+  },
+  "SOL-USD": {
+    desc: "Solana. A high-performance, low-latency Layer-1 blockchain network designed for decentralized apps, decentralized finance, and payment systems, utilizing proof-of-history consensus.",
+    drivers: "Dapp transaction volume, meme coin trading activity, active wallet growth, network uptime stability, developer capital inflows, and crypto asset liquidity cycles."
+  },
+  "GC=F": {
+    desc: "Gold Futures (COMEX). Leveraged futures contracts trading on the COMEX division of the NYMEX, representing the global benchmark price for gold transaction clearing.",
+    drivers: "Federal Reserve real interest rate curves, geopolitical tail-events, global central bank bullion reserves demand, and institutional speculative futures positioning."
+  },
+  "SI=F": {
+    desc: "Silver Futures (COMEX). Leveraged futures contracts representing the pricing of industrial and precious silver, serving as a primary speculative trading asset for commodity hedge funds.",
+    drivers: "Industrial manufacturing consumption trends, green technology adoption curves (PV cells), precious metal investment flows, and US Dollar volatility."
+  },
+  "CL=F": {
+    desc: "Light Sweet Crude Oil Futures (NYMEX). The world's most liquid energy futures contract, tracking West Texas Intermediate (WTI) crude oil, the global pricing benchmark for light oil.",
+    drivers: "OPEC+ supply coordination, US Strategic Petroleum Reserve (SPR) actions, global refining capacity levels, and global macroeconomic growth expectations."
+  },
+  "NG=F": {
+    desc: "Natural Gas Futures (NYMEX). Futures contracts tracking US natural gas prices at the Henry Hub in Louisiana, serving as the benchmark for domestic heating and electricity energy pricing.",
+    drivers: "Midwest and East Coast winter weather forecasts, European LNG import demand, domestic drilling rig counts, and natural gas storage inventory reports."
+  },
+  "HG=F": {
+    desc: "Copper Futures (COMEX). Futures contracts tracking industrial copper, widely known as 'Dr. Copper' because its price performance acts as a diagnostic tool for global economic expansion.",
+    drivers: "Chinese real estate and infrastructure spending, EV battery and wiring manufacturing indices, global grid electrification investments, and copper mining output disruptions."
+  },
+  "PA=F": {
+    desc: "Palladium Futures (NYMEX). Futures contracts tracking palladium, a rare industrial precious metal primarily utilized in automobile catalytic converters to reduce emissions.",
+    drivers: "Global auto industry production volumes, hybrid vehicle emission regulations, South African and Russian mining output stability, and platinum-to-palladium substitution rates."
+  },
+  "ZC=F": {
+    desc: "Corn Futures (CBOT). The benchmark agricultural futures contract tracking US corn pricing on the Chicago Board of Trade, representing the global agricultural supply benchmark.",
+    drivers: "US Midwest planting weather, fertilizer and natural gas input costs, global ethanol fuel mandates, Chinese livestock feed imports, and global grain shipping lane logistics."
+  }
 }
 
 function AssetModal({ asset, onClose }) {
@@ -163,8 +261,8 @@ export default function Dashboard() {
         {[
           { label: 'Assets Tracked',  value: validQuotes.length,    sub: 'ETFs · Crypto · Commodities' },
           { label: 'Avg Volatility',  value: dashItems.length ? `${(dashItems.reduce((a,x) => a + x.rv_20d, 0) / dashItems.length * 100).toFixed(1)}%` : '—', sub: '20-day annualised' },
-          { label: 'Highest Vol',     value: dashItems[0]?.ticker ?? '—',  sub: `${((dashItems[0]?.rv_20d??0)*100).toFixed(1)}% annualised` },
-          { label: 'Lowest Vol',      value: dashItems.at(-1)?.ticker ?? '—', sub: `${((dashItems.at(-1)?.rv_20d??0)*100).toFixed(1)}% annualised` },
+          { label: 'Highest Vol',     value: dashItems[0]?.name ?? '—',  sub: `${dashItems[0]?.ticker ?? '—'} · ${((dashItems[0]?.rv_20d??0)*100).toFixed(1)}% annualised` },
+          { label: 'Lowest Vol',      value: dashItems.at(-1)?.name ?? '—', sub: `${dashItems.at(-1)?.ticker ?? '—'} · ${((dashItems.at(-1)?.rv_20d??0)*100).toFixed(1)}% annualised` },
         ].map(kpi => (
           <div key={kpi.label} className="card">
             <div className="card-title">{kpi.label}</div>
@@ -190,7 +288,7 @@ export default function Dashboard() {
             fontFamily: 'var(--font-mono)'
           }}
         >
-          {showAllChart ? 'SHOW TOP 10' : 'EXPAND TO ALL 30'}
+          {showAllChart ? 'SHOW TOP 10' : 'EXPAND TO ALL 32'}
         </button>
       </div>
       <div className="card" style={{ marginBottom: 24 }}>
@@ -198,8 +296,12 @@ export default function Dashboard() {
           <BarChart data={showAllChart ? dashItems : dashItems.slice(0, 10)} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
             <XAxis
               dataKey="ticker"
-              tick={{ fill: '#8b8d91', fontSize: 11, fontFamily: 'IBM Plex Mono' }}
+              tick={{ fill: '#8b8d91', fontSize: 9, fontFamily: 'IBM Plex Mono' }}
               axisLine={false} tickLine={false}
+              interval={0}
+              angle={-45}
+              textAnchor="end"
+              height={50}
             />
             <YAxis
               tickFormatter={v => `${(v*100).toFixed(0)}%`}

@@ -7,7 +7,8 @@ import {
 
 const ALL_ASSETS = [
   'SPY','QQQ','GLD','TLT','IWM','EEM','HYG','VNQ',
-  'XLE','XLK','XLF','XLV','BTC-USD','ETH-USD','GC=F','CL=F','SLV','USO'
+  'XLE','XLK','XLF','XLV','BTC-USD','ETH-USD','GC=F','CL=F','SLV','USO',
+  'XLY','XLP'
 ]
 const COLORS = ['#ffa500','#00ff88','#4da6ff','#ff4444','#cc44ff','#ffcc44','#44ffcc','#ff8844']
 
