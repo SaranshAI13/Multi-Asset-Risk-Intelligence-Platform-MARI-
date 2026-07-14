@@ -298,6 +298,7 @@ body::before {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: var(--shadow-glass);
+  z-index: 10;
 }
 
 .page-header::after {

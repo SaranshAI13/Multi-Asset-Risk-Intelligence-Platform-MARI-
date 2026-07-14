@@ -6,6 +6,7 @@ import Portfolio   from './pages/Portfolio'
 import Regime      from './pages/Regime'
 import CommandPalette from './components/CommandPalette'
 import ToastManager   from './components/ToastManager'
+import SplashScreen   from './components/SplashScreen'
 import './index.css'
 
 const NAV = [
@@ -18,7 +19,7 @@ const NAV = [
 function Sidebar({ onOpenCmd, theme, toggleTheme }) {
   return (
     <aside className="sidebar">
-      <div className="sidebar-logo" style={{ paddingBottom: '12px' }}>
+      <div className="sidebar-logo">
         <div className="logo-title">
           Multi-Asset Risk<br />Intelligence
         </div>
@@ -46,11 +47,7 @@ function Sidebar({ onOpenCmd, theme, toggleTheme }) {
         </a>
 
         {/* Command Palette trigger */}
-        <div
-          className="nav-link"
-          onClick={onOpenCmd}
-          style={{ marginTop: 8, cursor: 'pointer' }}
-        >
+        <div className="nav-link" onClick={onOpenCmd} style={{ marginTop: 8, cursor: 'pointer' }}>
           <span className="nav-icon" style={{ fontSize: 13 }}>⌕</span>
           <span style={{ flex: 1 }}>Search</span>
           <kbd style={{
@@ -63,9 +60,96 @@ function Sidebar({ onOpenCmd, theme, toggleTheme }) {
         </div>
       </nav>
 
-      <div style={{ padding: '14px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {/* Developer Contact */}
+      <div style={{
+        margin: '0 12px 12px',
+        padding: '12px 14px',
+        background: 'rgba(255,165,0,0.04)',
+        border: '1px solid rgba(255,165,0,0.1)',
+        borderRadius: 10,
+      }}>
+        <div style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: 8,
+          letterSpacing: '1.5px',
+          color: 'var(--text-muted)',
+          textTransform: 'uppercase',
+          marginBottom: 10,
+        }}>
+          Developer
+        </div>
+
+        {/* Gmail */}
+        <a
+          href="mailto:nijhawansaransh2005@gmail.com"
+          title="nijhawansaransh2005@gmail.com"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            textDecoration: 'none', marginBottom: 8,
+            color: 'var(--text-secondary)', fontSize: 11,
+            fontFamily: 'var(--font-sans)',
+            transition: 'color 0.15s',
+          }}
+          onMouseOver={e => e.currentTarget.style.color = 'var(--amber)'}
+          onMouseOut={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+        >
+          <span style={{ fontSize: 13, flexShrink: 0 }}>✉️</span>
+          <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+            Gmail
+          </span>
+        </a>
+
+        {/* LinkedIn */}
+        <a
+          href="https://www.linkedin.com/in/saransh-nijhawan8142"
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            textDecoration: 'none', marginBottom: 8,
+            color: 'var(--text-secondary)', fontSize: 11,
+            fontFamily: 'var(--font-sans)',
+            transition: 'color 0.15s',
+          }}
+          onMouseOver={e => e.currentTarget.style.color = 'var(--cyan)'}
+          onMouseOut={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+        >
+          <span style={{ fontSize: 13, flexShrink: 0 }}>🔗</span>
+          <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+            LinkedIn
+          </span>
+        </a>
+
+        {/* GitHub */}
+        <a
+          href="https://github.com/SaranshAI13"
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            textDecoration: 'none',
+            color: 'var(--text-secondary)', fontSize: 11,
+            fontFamily: 'var(--font-sans)',
+            transition: 'color 0.15s',
+          }}
+          onMouseOver={e => e.currentTarget.style.color = '#00ff88'}
+          onMouseOut={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+        >
+          <span style={{ fontSize: 13, flexShrink: 0 }}>🐙</span>
+          <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+            GitHub
+          </span>
+        </a>
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        padding: '12px 20px',
+        borderTop: '1px solid rgba(255,255,255,0.05)',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      }}>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--text-muted)', letterSpacing: '1px' }}>
-          © MARI · QUANT RISK LAB
+          © MARI · v1.0.0
         </div>
         {/* Theme toggle */}
         <button
@@ -156,9 +240,12 @@ function AppInner() {
 }
 
 export default function App() {
+  const [splashDone, setSplashDone] = useState(false)
+
   return (
     <BrowserRouter>
       <ToastManager>
+        {!splashDone && <SplashScreen onDone={() => setSplashDone(true)} />}
         <AppInner />
       </ToastManager>
     </BrowserRouter>

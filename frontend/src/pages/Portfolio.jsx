@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { optimizePortfolio } from '../api'
 import AnimatedNumber from '../components/AnimatedNumber'
-import ExportPDF from '../components/ExportPDF'
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, ScatterChart, Scatter, PieChart, Pie, Cell, Legend
@@ -81,16 +80,9 @@ export default function Portfolio() {
   return (
     <div>
       <div className="page-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div className="page-title">Portfolio Optimizer</div>
-            <div className="page-subtitle">Markowitz Mean-Variance · Risk Parity · Efficient Frontier · scipy.optimize</div>
-          </div>
-          <ExportPDF
-            filename="MARI-Portfolio-Report"
-            label="Export Portfolio PDF"
-            sections={['portfolio-kpi','portfolio-weights','portfolio-correlation']}
-          />
+        <div className="page-title">Portfolio Optimizer</div>
+        <div className="page-subtitle">
+          Markowitz Mean-Variance · Risk Parity · Efficient Frontier · scipy.optimize
         </div>
       </div>
 
