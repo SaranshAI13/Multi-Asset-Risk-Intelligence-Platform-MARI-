@@ -9,6 +9,13 @@ import numpy as np
 from datetime import datetime, timedelta
 from functools import lru_cache
 import time
+import requests
+
+# Create a session with a real browser User-Agent to bypass Yahoo Finance rate-limiting blocks on cloud IPs
+_yf_session = requests.Session()
+_yf_session.headers.update({
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+})
 
 # ── Asset Universe ──────────────────────────────────────────
 ASSETS = {
@@ -64,7 +71,7 @@ def get_cached_prices(ticker: str, period: str = "2y") -> pd.DataFrame:
             return cached_df
 
     try:
-        df = yf.download(ticker, period=period, auto_adjust=True, progress=False)
+        df = yf.download(ticker, period=period, auto_adjust=True, progress=False, session=_yf_session)
         if df.empty:
             raise ValueError(f"No data returned for {ticker}")
 
