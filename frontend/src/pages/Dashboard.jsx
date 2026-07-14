@@ -4,6 +4,8 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell
 } from 'recharts'
 import AnimatedNumber from '../components/AnimatedNumber'
+import ReturnHeatmap from '../components/ReturnHeatmap'
+import ExportPDF from '../components/ExportPDF'
 
 const CATEGORY_COLOR = { ETF: '#ffa500', Crypto: '#4da6ff', Commodity: '#00ff88' }
 
@@ -236,6 +238,7 @@ export default function Dashboard() {
   const [error,   setError]   = useState(null)
   const [showAllChart, setShowAllChart] = useState(false)
   const [selectedAsset, setSelectedAsset] = useState(null)
+  const [heatmapTicker, setHeatmapTicker] = useState('SPY')
 
   useEffect(() => {
     Promise.all([fetchDashboard(), fetchQuotes()])
@@ -269,17 +272,24 @@ export default function Dashboard() {
               Real-time risk analytics · {validQuotes.length} assets · Live via yfinance
             </div>
           </div>
-          <div style={{ textAlign: 'right' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-secondary)' }}>
               {new Date().toLocaleString('en-US', { hour12: false })}
             </div>
-            <span className="badge badge-green" style={{ marginTop: 6 }}>● LIVE</span>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <ExportPDF
+                filename="MARI-Dashboard-Report"
+                label="Export Report"
+                sections={['dashboard-kpi','dashboard-chart','dashboard-table']}
+              />
+              <span className="badge badge-green">● LIVE</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Summary KPIs — with animated counters */}
-      <div className="grid-4" style={{ marginBottom: 24 }}>
+      <div className="grid-4" id="dashboard-kpi" style={{ marginBottom: 24 }}>
         <div className="card">
           <div className="card-title">Assets Tracked</div>
           <div className="card-value">
@@ -315,7 +325,7 @@ export default function Dashboard() {
       </div>
 
       {/* Volatility Heatmap Bar Chart */}
-      <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div id="dashboard-chart" className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>Volatility Ranking (20-Day Annualised)</div>
         <button 
           onClick={() => setShowAllChart(!showAllChart)}
@@ -378,7 +388,7 @@ export default function Dashboard() {
       </div>
 
       {/* Risk Table */}
-      <div className="section-header">Risk Summary Table</div>
+      <div id="dashboard-table" className="section-header">Risk Summary Table</div>
       <div className="card">
         <table className="data-table">
           <thead>
@@ -432,6 +442,26 @@ export default function Dashboard() {
       </div>
 
       <AssetModal asset={selectedAsset} onClose={() => setSelectedAsset(null)} />
+
+      {/* Return Heatmap */}
+      <div className="section-header" style={{ marginTop: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span>Daily Return Heatmap</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 400 }}>Asset:</span>
+          <select
+            value={heatmapTicker}
+            onChange={e => setHeatmapTicker(e.target.value)}
+            style={{ fontSize: 11, padding: '4px 10px', fontFamily: 'var(--font-mono)' }}
+          >
+            {(dashItems.length > 0 ? dashItems : []).map(d => (
+              <option key={d.ticker} value={d.ticker}>{d.ticker} — {d.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div className="card" style={{ marginBottom: 32 }}>
+        <ReturnHeatmap ticker={heatmapTicker} />
+      </div>
     </div>
   )
 }

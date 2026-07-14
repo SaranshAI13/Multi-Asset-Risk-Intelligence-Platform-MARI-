@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { optimizePortfolio } from '../api'
 import AnimatedNumber from '../components/AnimatedNumber'
+import ExportPDF from '../components/ExportPDF'
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, ScatterChart, Scatter, PieChart, Pie, Cell, Legend
@@ -80,9 +81,16 @@ export default function Portfolio() {
   return (
     <div>
       <div className="page-header">
-        <div className="page-title">Portfolio Optimizer</div>
-        <div className="page-subtitle">
-          Markowitz Mean-Variance · Risk Parity · Efficient Frontier · scipy.optimize
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div className="page-title">Portfolio Optimizer</div>
+            <div className="page-subtitle">Markowitz Mean-Variance · Risk Parity · Efficient Frontier · scipy.optimize</div>
+          </div>
+          <ExportPDF
+            filename="MARI-Portfolio-Report"
+            label="Export Portfolio PDF"
+            sections={['portfolio-kpi','portfolio-weights','portfolio-correlation']}
+          />
         </div>
       </div>
 
@@ -164,7 +172,7 @@ export default function Portfolio() {
 
           {/* KPIs */}
           {current && (
-            <div>
+            <div id="portfolio-kpi">
               <div className="grid-3" style={{ marginBottom: 10 }}>
                 {[
                   { label: 'Expected Return*', value: `${(current.expected_return*100).toFixed(1)}%`, color: 'var(--green)'  },
@@ -208,7 +216,7 @@ export default function Portfolio() {
             </div>
           )}
 
-          <div className="grid-2" style={{ marginBottom: 24 }}>
+          <div id="portfolio-weights" className="grid-2" style={{ marginBottom: 24 }}>
             {/* Interactive Weight Adjuster */}
             <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
               <div className="section-header" style={{ margin: '0 0 14px', alignSelf: 'flex-start' }}>Optimal Weights</div>
