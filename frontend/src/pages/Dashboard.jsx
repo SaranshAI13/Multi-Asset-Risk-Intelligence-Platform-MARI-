@@ -175,6 +175,9 @@ function QuoteCard({ q }) {
           </div>
           <div style={{ fontSize: 20, fontWeight: 800, marginTop: 2 }}>
             ${q.price?.toFixed(2) ?? '—'}
+            <span style={{ fontSize: 9, color: 'var(--text-muted)', marginLeft: 4, fontWeight: 400 }}>
+              /{q.unit}
+            </span>
           </div>
           <div style={{ fontSize: 11, color: up ? 'var(--green)' : 'var(--red)', marginTop: 3, fontWeight: 600 }}>
             {up ? '▲' : '▼'} {Math.abs(q.pct).toFixed(2)}%
@@ -340,6 +343,7 @@ export default function Dashboard() {
               <th>Name</th>
               <th>Category</th>
               <th>Price</th>
+              <th>Price (1M Ago)</th>
               <th>1-Month Return</th>
               <th>5-Day RV</th>
               <th>20-Day RV</th>
@@ -358,7 +362,15 @@ export default function Dashboard() {
                 <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--amber)', fontWeight: 700 }}>{d.ticker}</td>
                 <td style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{d.name}</td>
                 <td><span className={`badge badge-${d.category==='ETF'?'amber':d.category==='Crypto'?'blue':'green'}`}>{d.category}</span></td>
-                <td style={{ fontFamily: 'var(--font-mono)' }}>${d.price?.toFixed(2)}</td>
+                <td style={{ fontFamily: 'var(--font-mono)' }}>
+                  ${d.price?.toFixed(2)}
+                  <span style={{ fontSize: 9, color: 'var(--text-muted)', marginLeft: 4 }}>
+                    /{d.unit}
+                  </span>
+                </td>
+                <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                  ${d.price_1m_ago?.toFixed(2)}
+                </td>
                 <td className={d.ret_1m >= 0 ? 'positive' : 'negative'}>
                   {d.ret_1m >= 0 ? '▲' : '▼'} {Math.abs(d.ret_1m * 100).toFixed(1)}%
                 </td>

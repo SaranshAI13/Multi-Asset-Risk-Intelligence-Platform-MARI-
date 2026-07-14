@@ -208,15 +208,19 @@ def get_dashboard():
             rv_5d    = float(returns.rolling(5).std().iloc[-1]  * 252 ** 0.5)
             ret_1m   = float(returns.tail(20).sum())
 
+            price_today = float(df["Close"].iloc[-1])
+            price_1m = float(df["Close"].iloc[-21]) if len(df) >= 21 else float(df["Close"].iloc[0])
             results.append({
                 "ticker":   ticker,
                 "name":     ASSETS[ticker]["name"],
                 "category": ASSETS[ticker]["category"],
                 "emoji":    ASSETS[ticker]["emoji"],
+                "unit":     ASSETS[ticker].get("unit", "share"),
                 "rv_20d":   round(rv_20d, 4),
                 "rv_5d":    round(rv_5d,  4),
                 "ret_1m":   round(ret_1m, 4),
-                "price":    round(float(df["Close"].iloc[-1]), 4),
+                "price":    round(price_today, 4),
+                "price_1m_ago": round(price_1m, 4),
             })
         except Exception:
             continue
