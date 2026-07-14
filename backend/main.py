@@ -124,9 +124,10 @@ def get_volatility(ticker: str):
         features_df = compute_features(df)
 
         result = get_volatility_forecast(ticker, returns, features_df)
-        result["name"]         = ASSETS[ticker]["name"]
-        result["category"]     = ASSETS[ticker]["category"]
-        result["latest_price"] = float(df["Close"].iloc[-1])
+        result["name"]           = ASSETS[ticker]["name"]
+        result["category"]       = ASSETS[ticker]["category"]
+        result["latest_price"]   = float(df["Close"].iloc[-1])
+        result["expected_return"] = float(returns.mean() * 252)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

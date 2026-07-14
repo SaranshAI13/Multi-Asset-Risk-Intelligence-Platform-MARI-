@@ -201,11 +201,16 @@ export default function Predictions() {
           {data.latest_price && (() => {
             const s0 = data.latest_price
             const volDec = data.ml_gbm?.point_forecast ?? data.garch?.point_forecast ?? 0.15
+            const expectedReturn = data.expected_return ?? 0.08
             // Compute days count based on selected tab
             const days = timeframe === '1w' ? 5 : 21
             const t = days / 252
-            const volT = volDec * Math.sqrt(t)
+            
+            // Expected Single Price forecast (drift-adjusted)
+            const mu_T = expectedReturn * t
+            const s_exp = s0 * (1 + mu_T)
 
+            const volT = volDec * Math.sqrt(t)
             // expected moves in percentage
             const pctMove = volT * 100
 
@@ -253,13 +258,43 @@ export default function Predictions() {
                         </span>
                       </div>
                     </div>
-                    <div style={{ marginTop: 16, padding: '12px 14px', background: 'rgba(0, 212, 255, 0.05)', border: '1px solid rgba(0, 212, 255, 0.2)', borderRadius: 8 }}>
-                      <div style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: 1.5 }}>MARI Final Price Target</div>
-                      <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', marginTop: 4 }}>
-                        ${lo2.toFixed(2)} — ${up2.toFixed(2)}
+                    
+                    {/* Final Expected Price Verdict Section */}
+                    <div style={{ marginTop: 16, padding: '14px 16px', background: 'rgba(0, 212, 255, 0.05)', border: '1px solid rgba(0, 212, 255, 0.2)', borderRadius: 8 }}>
+                      <div style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>
+                        MARI Expected Price Verdict ({labelTime})
                       </div>
-                      <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>
-                        * This price target represents the extreme boundary. Highly likely to hold unless overridden by sudden geopolitical shocks.
+                      
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontSize: 9, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>CURRENT PRICE</div>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
+                            ${s0.toFixed(2)}
+                          </div>
+                        </div>
+
+                        <div style={{ fontSize: 20, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>→</div>
+
+                        <div>
+                          <div style={{ fontSize: 9, color: 'var(--cyan)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>MARI FINAL PREDICTED PRICE</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 2 }}>
+                            <span style={{ fontSize: 26, fontWeight: 900, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                              ${s_exp.toFixed(2)}
+                            </span>
+                            <span style={{
+                              fontSize: 14,
+                              fontFamily: 'var(--font-mono)',
+                              fontWeight: 700,
+                              color: expectedChangePct > 0 ? 'var(--green)' : expectedChangePct < 0 ? 'var(--red)' : 'var(--text-secondary)'
+                            }}>
+                              ({expectedChangePct > 0 ? '+' : ''}{expectedChangePct.toFixed(2)}%)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 10, borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8, lineHeight: 1.3 }}>
+                        * Expected final price represents MARI's point forecast after {labelTime}. The green/red percentage value in brackets shows the exact projected change from the current price.
                       </div>
                     </div>
                   </div>
