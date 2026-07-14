@@ -60,8 +60,64 @@ ASSETS = {
 _price_cache: dict = {}
 CACHE_TTL_SECONDS = 300  # 5 minutes
 
+def _fetch_from_chart_api(ticker: str, period: str) -> pd.DataFrame:
+    """Fallback to direct Yahoo chart API when yfinance is blocked on cloud IPs."""
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    }
+    # Map periods to API chart standards if needed
+    api_period = "2y" if period == "2y" else "1y" if period == "1y" else "5d" if period == "5d" else period
+    r = requests.get(url, params={"range": api_period, "interval": "1d"}, headers=headers, timeout=20)
+    if r.status_code != 200:
+        raise RuntimeError(f"Yahoo Chart API returned status {r.status_code}")
+    
+    data = r.json()
+    result = data.get("chart", {}).get("result", [])
+    if not result:
+        raise ValueError(f"No result found in chart response for {ticker}")
+    
+    res = result[0]
+    timestamps = res.get("timestamp", [])
+    if not timestamps:
+        raise ValueError(f"No timestamps found in chart response for {ticker}")
+        
+    quotes = res.get("indicators", {}).get("quote", [{}])[0]
+    
+    opens = quotes.get("open", [])
+    highs = quotes.get("high", [])
+    lows = quotes.get("low", [])
+    closes = quotes.get("close", [])
+    volumes = quotes.get("volume", [])
+    
+    # Ensure lists are of equal length by filling or trimming to timestamp length
+    length = len(timestamps)
+    def align_list(lst, fill_val=None):
+        if len(lst) < length:
+            return lst + [fill_val] * (length - len(lst))
+        return lst[:length]
+
+    opens = align_list(opens, None)
+    highs = align_list(highs, None)
+    lows = align_list(lows, None)
+    closes = align_list(closes, None)
+    volumes = align_list(volumes, 0)
+    
+    # Build DataFrame
+    df = pd.DataFrame({
+        "Open": opens,
+        "High": highs,
+        "Low": lows,
+        "Close": closes,
+        "Volume": volumes
+    }, index=pd.to_datetime(np.array(timestamps) * 1000, unit='ms'))
+    
+    df.index.name = "Date"
+    df = df.dropna(subset=["Close"])
+    return df
+
 def get_cached_prices(ticker: str, period: str = "2y") -> pd.DataFrame:
-    """Fetch OHLCV data with 5-minute cache."""
+    """Fetch OHLCV data with 5-minute cache and direct API fallback."""
     cache_key = f"{ticker}_{period}"
     now = time.time()
 
@@ -70,23 +126,33 @@ def get_cached_prices(ticker: str, period: str = "2y") -> pd.DataFrame:
         if now - cached_time < CACHE_TTL_SECONDS:
             return cached_df
 
+    df = None
+    # Try standard yfinance first
     try:
         df = yf.download(ticker, period=period, auto_adjust=True, progress=False, session=_yf_session)
         if df.empty:
-            raise ValueError(f"No data returned for {ticker}")
-
+            raise ValueError("yfinance returned empty DataFrame")
+        
         # Flatten MultiIndex columns if present
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = df.columns.get_level_values(0)
 
         df.index = pd.to_datetime(df.index)
         df = df.dropna()
+    except Exception as e:
+        print(f"[WARN] yfinance failed for {ticker}, trying chart API fallback... Error: {e}")
+        try:
+            df = _fetch_from_chart_api(ticker, period)
+        except Exception as fallback_err:
+            import traceback
+            traceback.print_exc()
+            raise RuntimeError(f"Failed to fetch data for {ticker}: {fallback_err}")
+
+    if df is not None and not df.empty:
         _price_cache[cache_key] = (now, df)
         return df
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise RuntimeError(f"Failed to fetch data for {ticker}: {e}")
+    else:
+        raise RuntimeError(f"No data returned for {ticker} from both yfinance and fallback Chart API")
 
 
 def compute_returns(df: pd.DataFrame) -> pd.Series:
