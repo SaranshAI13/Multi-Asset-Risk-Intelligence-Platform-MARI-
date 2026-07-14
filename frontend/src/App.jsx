@@ -72,10 +72,10 @@ function Sidebar({ onOpenCmd, theme, toggleTheme }) {
       }}>
         <div style={{
           fontFamily: 'var(--font-mono)',
-          fontSize: 7.5,
-          letterSpacing: '1px',
-          color: 'var(--text-muted)',
-          textTransform: 'uppercase',
+          fontSize: '10.5px',
+          fontWeight: 700,
+          letterSpacing: '0.5px',
+          color: 'var(--amber)',
           marginBottom: 10,
         }}>
           Developed by Saransh Nijhawan

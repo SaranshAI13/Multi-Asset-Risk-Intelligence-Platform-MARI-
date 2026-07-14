@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchVolatility, fetchAssets } from '../api'
 import AnimatedNumber from '../components/AnimatedNumber'
+import PageLoader from '../components/PageLoader'
 
 const ASSETS_DEFAULT = ['SPY', 'GLD', 'QQQ', 'BTC-USD', 'GC=F', 'TLT']
 
@@ -145,12 +146,7 @@ export default function Predictions() {
         </div>
       </div>
 
-      {loading && (
-        <div className="loading-wrap">
-          <div className="spinner" />
-          <div className="loading-text">GENERATING EXPECTED MOVES & TAIL RISK BOUNDARIES · {ticker}</div>
-        </div>
-      )}
+      {loading && <PageLoader text={`Generating expected moves & tail risk boundaries · ${ticker}`} />}
       {error && <div className="error-box">{error}</div>}
 
       {data && !loading && (

@@ -4,6 +4,7 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, Legend, ReferenceLine, BarChart, Bar, Cell
 } from 'recharts'
+import PageLoader from '../components/PageLoader'
 
 const ASSETS_DEFAULT = ['SPY', 'GLD', 'QQQ', 'BTC-USD', 'GC=F', 'TLT']
 
@@ -326,12 +327,7 @@ export default function Volatility() {
         </div>
       </div>
 
-      {loading && (
-        <div className="loading-wrap">
-          <div className="spinner" />
-          <div className="loading-text">TRAINING MODELS ON LIVE DATA · {ticker}</div>
-        </div>
-      )}
+      {loading && <PageLoader text={`Training models on live data · ${ticker}`} />}
       {error && <div className="error-box">{error}</div>}
 
       {data && !loading && (

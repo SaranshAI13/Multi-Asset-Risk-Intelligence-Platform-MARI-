@@ -4,6 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell
 } from 'recharts'
 import AnimatedNumber from '../components/AnimatedNumber'
+import PageLoader from '../components/PageLoader'
 
 const CATEGORY_COLOR = { ETF: '#ffa500', Crypto: '#4da6ff', Commodity: '#00ff88' }
 
@@ -247,12 +248,7 @@ export default function Dashboard() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return (
-    <div className="loading-wrap">
-      <div className="spinner" />
-      <div className="loading-text">FETCHING LIVE MARKET DATA...</div>
-    </div>
-  )
+  if (loading) return <PageLoader text="Fetching live market data" />
   if (error) return <div className="error-box">Failed to load: {error}</div>
 
   const dashItems = dash?.dashboard ?? []

@@ -3,6 +3,7 @@ import { fetchRegime, fetchAssets } from '../api'
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine
 } from 'recharts'
+import PageLoader from '../components/PageLoader'
 
 const ASSETS = ['SPY','QQQ','GLD','TLT','BTC-USD','GC=F','ETH-USD','IWM','USO','EEM','XLY','XLP']
 
@@ -189,12 +190,7 @@ export default function Regime() {
         </div>
       </div>
 
-      {loading && (
-        <div className="loading-wrap">
-          <div className="spinner" />
-          <div className="loading-text">DETECTING MARKET REGIME · {ticker}</div>
-        </div>
-      )}
+      {loading && <PageLoader text={`Detecting market regime · ${ticker}`} />}
       {error && <div className="error-box">{error}</div>}
 
       {data && !loading && (

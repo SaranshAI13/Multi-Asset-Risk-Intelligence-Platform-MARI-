@@ -5,6 +5,7 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, ScatterChart, Scatter, PieChart, Pie, Cell, Legend
 } from 'recharts'
+import PageLoader from '../components/PageLoader'
 
 const ALL_ASSETS = [
   'SPY', 'QQQ', 'IWM', 'EEM', 'GLD', 'SLV', 'USO', 'TLT', 'HYG', 'VNQ',
@@ -138,12 +139,7 @@ export default function Portfolio() {
         </div>
       </div>
 
-      {loading && (
-        <div className="loading-wrap">
-          <div className="spinner" />
-          <div className="loading-text">SOLVING EFFICIENT FRONTIER · {selected.length} ASSETS</div>
-        </div>
-      )}
+      {loading && <PageLoader text={`Solving efficient frontier · ${selected.length} assets`} />}
       {error && <div className="error-box">{error}</div>}
 
       {result && !loading && (
