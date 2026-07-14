@@ -198,7 +198,7 @@ function QuoteCard({ q, onSelect }) {
             </span>
           </div>
           <div style={{ fontSize: 11, color: up ? 'var(--green)' : 'var(--red)', marginTop: 3, fontWeight: 600 }}>
-            {up ? '▲' : '▼'} {Math.abs(q.pct).toFixed(2)}%
+            {up ? '▲' : '▼'} {Math.abs(q.pct).toFixed(2)}%*
           </div>
         </div>
         <div>
@@ -346,7 +346,12 @@ export default function Dashboard() {
       </div>
 
       {/* Live Quote Cards */}
-      <div className="section-header">Live Quotes</div>
+      <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>Live Quotes</div>
+        <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontWeight: 400 }}>
+          * returns represent daily price changes
+        </div>
+      </div>
       <div className="grid-4">
         {validQuotes.map(q => <QuoteCard key={q.ticker} q={q} onSelect={() => setSelectedAsset(q)} />)}
       </div>
