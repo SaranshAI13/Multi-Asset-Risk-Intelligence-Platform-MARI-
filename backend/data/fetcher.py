@@ -110,7 +110,7 @@ def _fetch_from_chart_api(ticker: str, period: str) -> pd.DataFrame:
         "Low": lows,
         "Close": closes,
         "Volume": volumes
-    }, index=pd.to_datetime(np.array(timestamps) * 1000, unit='ms'))
+    }, index=pd.to_datetime(np.array(timestamps) * 1000, unit='ms').tz_localize(None))
     
     df.index.name = "Date"
     df = df.dropna(subset=["Close"])
@@ -137,7 +137,7 @@ def get_cached_prices(ticker: str, period: str = "2y") -> pd.DataFrame:
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = df.columns.get_level_values(0)
 
-        df.index = pd.to_datetime(df.index)
+        df.index = pd.to_datetime(df.index).tz_localize(None)
         df = df.dropna()
     except Exception as e:
         print(f"[WARN] yfinance failed for {ticker}, trying chart API fallback... Error: {e}")

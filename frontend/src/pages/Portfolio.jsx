@@ -64,7 +64,13 @@ export default function Portfolio() {
     if (selected.length < 2) return
     setLoading(true); setError(null); setResult(null)
     optimizePortfolio(selected, currentRf)
-      .then(r => setResult(r.data))
+      .then(r => {
+        if (r.data?.error) {
+          setError(r.data.error)
+        } else {
+          setResult(r.data)
+        }
+      })
       .catch(e => setError(e.response?.data?.detail || e.message))
       .finally(() => setLoading(false))
   }
