@@ -225,7 +225,7 @@ body {
   padding: 24px 28px;
   margin-bottom: 28px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .page-header::after {
