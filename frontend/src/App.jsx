@@ -72,13 +72,13 @@ function Sidebar({ onOpenCmd, theme, toggleTheme }) {
       }}>
         <div style={{
           fontFamily: 'var(--font-mono)',
-          fontSize: 8,
-          letterSpacing: '1.5px',
+          fontSize: 7.5,
+          letterSpacing: '1px',
           color: 'var(--text-muted)',
           textTransform: 'uppercase',
           marginBottom: 10,
         }}>
-          Developer
+          Developed by Saransh Nijhawan
         </div>
 
         {/* Gmail */}
