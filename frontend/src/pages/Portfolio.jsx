@@ -52,6 +52,7 @@ export default function Portfolio() {
   const [error,    setError]    = useState(null)
   const [activePort, setActivePort] = useState('max_sharpe')
   const [rfRate,     setRfRate]     = useState(0.05)
+  const [showSharpeModal, setShowSharpeModal] = useState(false)
 
   const toggle = (a) => setSelected(s =>
     s.includes(a) ? s.filter(x => x !== a) : s.length < 10 ? [...s, a] : s
@@ -169,8 +170,40 @@ export default function Portfolio() {
                   { label: 'Volatility*',      value: `${(current.volatility*100).toFixed(1)}%`,      color: 'var(--amber)'  },
                   { label: 'Sharpe Ratio',    value: current.sharpe_ratio?.toFixed(2),               color: 'var(--blue)'   },
                 ].map(k => (
-                  <div key={k.label} className="card">
-                    <div className="card-title">{k.label}</div>
+                  <div 
+                    key={k.label} 
+                    className="card"
+                    onClick={k.label === 'Sharpe Ratio' ? () => setShowSharpeModal(true) : undefined}
+                    style={k.label === 'Sharpe Ratio' ? { 
+                      cursor: 'pointer', 
+                      transition: 'all 0.2s ease-in-out',
+                    } : undefined}
+                    onMouseOver={k.label === 'Sharpe Ratio' ? e => {
+                      e.currentTarget.style.borderColor = 'var(--blue)';
+                      e.currentTarget.style.boxShadow = '0 0 12px rgba(77, 166, 255, 0.15)';
+                    } : undefined}
+                    onMouseOut={k.label === 'Sharpe Ratio' ? e => {
+                      e.currentTarget.style.borderColor = 'var(--bg-border)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    } : undefined}
+                  >
+                    <div className="card-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>{k.label}</span>
+                      {k.label === 'Sharpe Ratio' && (
+                        <span style={{ 
+                          fontSize: 9, 
+                          color: 'var(--blue)', 
+                          border: '1px solid var(--blue)', 
+                          borderRadius: '50%', 
+                          width: 12, 
+                          height: 12, 
+                          display: 'inline-flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          fontWeight: 'bold',
+                        }}>?</span>
+                      )}
+                    </div>
                     <div className="card-value" style={{ color: k.color, fontSize: 32 }}>{k.value}</div>
                     <div className="card-sub">{current.label}</div>
                   </div>
@@ -323,6 +356,62 @@ export default function Portfolio() {
           )}
         </>
       )}
+      <SharpeRatioModal isOpen={showSharpeModal} onClose={() => setShowSharpeModal(false)} rfRate={rfRate} />
     </div>
   )
+}
+
+function SharpeRatioModal({ isOpen, onClose, rfRate }) {
+  if (!isOpen) return null;
+  
+  // Dynamic example calculations based on current slider rfRate
+  const fundASharpe = ((15 - rfRate * 100) / 10).toFixed(2);
+  const fundBSharpe = ((20 - rfRate * 100) / 20).toFixed(2);
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="card" onClick={e => e.stopPropagation()} style={{ width: 550, maxWidth: '90%', padding: 24, position: 'relative', border: '1px solid var(--border)' }}>
+        <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 24 }}>&times;</button>
+        <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', marginBottom: 16 }}>What is the Sharpe Ratio?</div>
+        
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>
+          The <strong>Sharpe Ratio</strong> (developed by Nobel laureate William F. Sharpe) measures the <strong>excess return</strong> you get for every unit of volatility (risk) you take. 
+          It answers the basic question: <em>"Is it worth taking this investment risk, or should I have just kept my money in a risk-free savings bank FD?"</em>
+        </p>
+
+        <div style={{ background: 'rgba(255,255,255,0.03)', padding: 14, borderRadius: 6, fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--amber)', marginBottom: 16, textAlign: 'center', border: '1px solid rgba(255,165,0,0.1)' }}>
+          Sharpe Ratio = (Expected Return - Risk-Free Rate) / Volatility
+        </div>
+
+        <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-primary)', marginBottom: 8, letterSpacing: 0.5 }}>
+          💡 Real-World Example (Risk-Free Hurdle Rate = {(rfRate * 100).toFixed(1)}%):
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 16 }}>
+          Imagine you are comparing two mutual funds:
+          <br />• <strong>Fund A (Low Risk)</strong>: Annual return is <strong>15%</strong> with <strong>10% Volatility</strong>.
+          <br />• <strong>Fund B (High Risk)</strong>: Annual return is <strong>20%</strong> with <strong>20% Volatility</strong>.
+          <br /><br />
+          Calculating their Sharpe Ratios:
+          <br />• <strong>Fund A Sharpe</strong>: (15% - {(rfRate*100).toFixed(0)}%) / 10% = <strong>{fundASharpe}</strong> {parseFloat(fundASharpe) > parseFloat(fundBSharpe) ? '(Superior risk-adjusted return!)' : ''}
+          <br />• <strong>Fund B Sharpe</strong>: (20% - {(rfRate*100).toFixed(0)}%) / 20% = <strong>{fundBSharpe}</strong> {parseFloat(fundBSharpe) > parseFloat(fundASharpe) ? '(Superior risk-adjusted return!)' : ''}
+          <br /><br />
+          {parseFloat(fundASharpe) > parseFloat(fundBSharpe) ? (
+            <span>Even though Fund B has a higher absolute return (20% vs 15%), <strong>Fund A is mathematically superior</strong> because it gives you more profit per unit of risk. Fund B is taking double the risk for only 5% extra return.</span>
+          ) : (
+            <span>Since the risk-free rate is very high, Fund B's higher absolute return is mathematically superior as it justifies the volatility relative to the cash benchmark.</span>
+          )}
+        </div>
+
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-primary)', marginBottom: 8, letterSpacing: 0.5 }}>
+          📊 Sharpe Ratio Benchmarks:
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11, fontFamily: 'var(--font-mono)' }}>
+          <div>• <strong>&lt; 1.0</strong>: Sub-optimal / Bad</div>
+          <div>• <strong>1.0 - 1.9</strong>: Good / Standard</div>
+          <div>• <strong>2.0 - 2.9</strong>: Very Good / Active</div>
+          <div>• <strong>&gt; 3.0</strong>: Outstanding / Rare</div>
+        </div>
+      </div>
+    </div>
+  );
 }
