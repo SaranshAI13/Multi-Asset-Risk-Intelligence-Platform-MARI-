@@ -164,10 +164,28 @@ function AssetModal({ asset, onClose }) {
   )
 }
 
-function QuoteCard({ q }) {
+function QuoteCard({ q, onSelect }) {
   const up = q.pct >= 0
   return (
-    <div className="card" style={{ padding: '16px 20px' }}>
+    <div 
+      className="card" 
+      onClick={onSelect}
+      style={{ 
+        padding: '16px 20px', 
+        cursor: 'pointer',
+        transition: 'all 0.2s ease-in-out' 
+      }}
+      onMouseOver={e => {
+        e.currentTarget.style.backgroundColor = 'var(--surface-light)';
+        e.currentTarget.style.transform = 'translateY(-2px)';
+        e.currentTarget.style.borderColor = 'var(--amber)';
+      }}
+      onMouseOut={e => {
+        e.currentTarget.style.backgroundColor = 'transparent';
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.borderColor = 'var(--border)';
+      }}
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)', letterSpacing: 1 }}>
@@ -330,7 +348,7 @@ export default function Dashboard() {
       {/* Live Quote Cards */}
       <div className="section-header">Live Quotes</div>
       <div className="grid-4">
-        {validQuotes.map(q => <QuoteCard key={q.ticker} q={q} />)}
+        {validQuotes.map(q => <QuoteCard key={q.ticker} q={q} onSelect={() => setSelectedAsset(q)} />)}
       </div>
 
       {/* Risk Table */}
