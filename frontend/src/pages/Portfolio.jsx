@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { optimizePortfolio } from '../api'
+import AnimatedNumber from '../components/AnimatedNumber'
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, ScatterChart, Scatter, PieChart, Pie, Cell, Legend
@@ -174,37 +175,29 @@ export default function Portfolio() {
                     key={k.label} 
                     className="card"
                     onClick={k.label === 'Sharpe Ratio' ? () => setShowSharpeModal(true) : undefined}
-                    style={k.label === 'Sharpe Ratio' ? { 
-                      cursor: 'pointer', 
-                      transition: 'all 0.2s ease-in-out',
-                    } : undefined}
+                    style={k.label === 'Sharpe Ratio' ? { cursor: 'pointer', transition: 'all 0.2s ease-in-out' } : undefined}
                     onMouseOver={k.label === 'Sharpe Ratio' ? e => {
                       e.currentTarget.style.borderColor = 'var(--blue)';
                       e.currentTarget.style.boxShadow = '0 0 12px rgba(77, 166, 255, 0.15)';
                     } : undefined}
                     onMouseOut={k.label === 'Sharpe Ratio' ? e => {
-                      e.currentTarget.style.borderColor = 'var(--bg-border)';
+                      e.currentTarget.style.borderColor = 'var(--glass-border)';
                       e.currentTarget.style.boxShadow = 'none';
                     } : undefined}
                   >
                     <div className="card-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span>{k.label}</span>
                       {k.label === 'Sharpe Ratio' && (
-                        <span style={{ 
-                          fontSize: 9, 
-                          color: 'var(--blue)', 
-                          border: '1px solid var(--blue)', 
-                          borderRadius: '50%', 
-                          width: 12, 
-                          height: 12, 
-                          display: 'inline-flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', 
-                          fontWeight: 'bold',
-                        }}>?</span>
+                        <span style={{ fontSize: 9, color: 'var(--blue)', border: '1px solid var(--blue)', borderRadius: '50%', width: 12, height: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>?</span>
                       )}
                     </div>
-                    <div className="card-value" style={{ color: k.color, fontSize: 32 }}>{k.value}</div>
+                    <div className="card-value" style={{ color: k.color, fontSize: 32 }}>
+                      {k.label === 'Expected Return*'
+                        ? <AnimatedNumber value={current.expected_return * 100} decimals={1} suffix="%" duration={900} />
+                        : k.label === 'Volatility*'
+                        ? <AnimatedNumber value={current.volatility * 100} decimals={1} suffix="%" duration={900} />
+                        : <AnimatedNumber value={current.sharpe_ratio ?? 0} decimals={2} duration={900} />}
+                    </div>
                     <div className="card-sub">{current.label}</div>
                   </div>
                 ))}
@@ -216,11 +209,11 @@ export default function Portfolio() {
           )}
 
           <div className="grid-2" style={{ marginBottom: 24 }}>
-            {/* Weight Pie */}
-            <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div className="section-header" style={{ margin: '0 0 16px', alignSelf: 'flex-start' }}>Optimal Weights</div>
-              {current && <WeightPie weights={current.weights} />}
-              <div style={{ marginTop: 12, fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8, width: '100%' }}>
+            {/* Interactive Weight Adjuster */}
+            <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+              <div className="section-header" style={{ margin: '0 0 14px', alignSelf: 'flex-start' }}>Optimal Weights</div>
+              {current && <InteractiveWeights weights={current.weights} colors={COLORS} />}
+              <div style={{ marginTop: 12, fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8 }}>
                 * Optimal weights show the percentage of capital allocated to each selected asset under the selected strategy.
               </div>
             </div>
@@ -414,4 +407,119 @@ function SharpeRatioModal({ isOpen, onClose, rfRate }) {
       </div>
     </div>
   );
+}
+
+// ── InteractiveWeights component ───────────────────────────────
+function InteractiveWeights({ weights, colors }) {
+  // Only show non-trivial weights
+  const active = weights.filter(w => w.weight > 0.001)
+  const [customWeights, setCustomWeights] = useState(() => {
+    const obj = {}
+    active.forEach(w => { obj[w.ticker] = Math.round(w.weight * 100) })
+    return obj
+  })
+
+  useEffect(() => {
+    const obj = {}
+    active.forEach(w => { obj[w.ticker] = Math.round(w.weight * 100) })
+    setCustomWeights(obj)
+  }, [weights])
+
+  const total = Object.values(customWeights).reduce((a, b) => a + b, 0)
+  const isCustomized = active.some(w => Math.abs((customWeights[w.ticker] ?? 0) - Math.round(w.weight * 100)) > 1)
+
+  const handleSlider = (ticker, val) => {
+    setCustomWeights(prev => ({ ...prev, [ticker]: Number(val) }))
+  }
+
+  const reset = () => {
+    const obj = {}
+    active.forEach(w => { obj[w.ticker] = Math.round(w.weight * 100) })
+    setCustomWeights(obj)
+  }
+
+  // Build donut arcs via SVG
+  const size = 160; const cx = size / 2; const cy = size / 2
+  const r = 60; const innerR = 38
+  const totalW = active.reduce((a, w) => a + (customWeights[w.ticker] ?? 0), 0) || 1
+
+  let angle = -90
+  const arcs = active.map((w, i) => {
+    const pct = (customWeights[w.ticker] ?? 0) / totalW
+    const sweep = pct * 360
+    const startAngle = angle
+    angle += sweep
+    const toRad = (deg) => (deg * Math.PI) / 180
+    const x1 = cx + r * Math.cos(toRad(startAngle))
+    const y1 = cy + r * Math.sin(toRad(startAngle))
+    const x2 = cx + r * Math.cos(toRad(angle - 0.5))
+    const y2 = cy + r * Math.sin(toRad(angle - 0.5))
+    const ix1 = cx + innerR * Math.cos(toRad(startAngle))
+    const iy1 = cy + innerR * Math.sin(toRad(startAngle))
+    const ix2 = cx + innerR * Math.cos(toRad(angle - 0.5))
+    const iy2 = cy + innerR * Math.sin(toRad(angle - 0.5))
+    const large = sweep > 180 ? 1 : 0
+    return {
+      d: `M ${ix1} ${iy1} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${ix2} ${iy2} A ${innerR} ${innerR} 0 ${large} 0 ${ix1} ${iy1} Z`,
+      color: colors[i % colors.length],
+      ticker: w.ticker,
+      pct: (customWeights[w.ticker] ?? 0),
+    }
+  })
+
+  return (
+    <div style={{ width: '100%' }}>
+      {/* Live donut */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 16 }}>
+        <svg width={size} height={size} style={{ flexShrink: 0 }}>
+          {arcs.map((arc, i) => (
+            <path key={i} d={arc.d} fill={arc.color} opacity={0.9} />
+          ))}
+          <text x={cx} y={cy - 6} textAnchor="middle" fill="#e8eaed" fontSize={11} fontFamily="IBM Plex Mono" fontWeight={700}>{total}%</text>
+          <text x={cx} y={cy + 10} textAnchor="middle" fill="#7a8090" fontSize={8} fontFamily="IBM Plex Mono">ALLOCATED</text>
+        </svg>
+
+        {/* Legend */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {arcs.map((arc, i) => (
+            <div key={arc.ticker} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 8, height: 8, borderRadius: 2, background: arc.color, flexShrink: 0 }} />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: arc.color, fontWeight: 700, minWidth: 60 }}>{arc.ticker}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-secondary)' }}>{arc.pct}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Sliders */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {active.map((w, i) => (
+          <div key={w.ticker}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: colors[i % colors.length], fontWeight: 700 }}>{w.ticker}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-secondary)' }}>{customWeights[w.ticker] ?? 0}%</span>
+            </div>
+            <input
+              type="range" min={0} max={100} step={1}
+              value={customWeights[w.ticker] ?? 0}
+              onChange={e => handleSlider(w.ticker, e.target.value)}
+              style={{ width: '100%', accentColor: colors[i % colors.length], cursor: 'pointer', height: 3 }}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Total + Reset */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: total === 100 ? 'var(--green)' : total > 100 ? 'var(--red)' : 'var(--amber)', fontWeight: 700 }}>
+          Total: {total}% {total === 100 ? '✓' : total > 100 ? '↑ Over' : '↓ Under'}
+        </span>
+        {isCustomized && (
+          <button onClick={reset} style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '3px 10px', cursor: 'pointer' }}>
+            Reset to Optimal
+          </button>
+        )}
+      </div>
+    </div>
+  )
 }

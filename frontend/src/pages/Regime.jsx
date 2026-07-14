@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchRegime, fetchAssets } from '../api'
 import {
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine
 } from 'recharts'
 
 const ASSETS = ['SPY','QQQ','GLD','TLT','BTC-USD','GC=F','ETH-USD','IWM','USO','EEM','XLY','XLP']
@@ -42,6 +42,7 @@ export default function Regime() {
   const [allAssetsMap, setAllAssetsMap] = useState({})
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [scrubberIdx, setScrubberIdx] = useState(null)
 
   useEffect(() => {
     fetchAssets().then(r => {
@@ -289,8 +290,39 @@ export default function Regime() {
                     return <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={3} fill={c} opacity={0.8} />
                   }}
                 />
+                {scrubberIdx !== null && chartData[scrubberIdx] && (
+                  <ReferenceLine x={chartData[scrubberIdx].date} stroke="rgba(255,255,255,0.4)" strokeWidth={1} strokeDasharray="4 2" />
+                )}
               </AreaChart>
             </ResponsiveContainer>
+
+            {/* Timeline Scrubber */}
+            {chartData.length > 0 && (() => {
+              const idx = scrubberIdx ?? chartData.length - 1
+              const point = chartData[idx]
+              const regimeLabel = point?.regime === 0 ? 'LOW RISK' : point?.regime === 1 ? 'MEDIUM RISK' : 'HIGH RISK'
+              const regimeCol   = point?.regime === 0 ? '#00ff88' : point?.regime === 1 ? '#ffa500' : '#ff4444'
+              return (
+                <div style={{ marginTop: 16, padding: '12px 0 0', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: 2, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Timeline Scrubber</span>
+                    {point && (
+                      <div style={{ display: 'flex', gap: 12, fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>{point.date}</span>
+                        <span style={{ color: 'var(--amber)' }}>Vol: {(point.rv_20d * 100).toFixed(1)}%</span>
+                        <span style={{ color: regimeCol, fontWeight: 700 }}>{regimeLabel}</span>
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    type="range" min={0} max={chartData.length - 1} step={1}
+                    value={idx}
+                    onChange={e => setScrubberIdx(Number(e.target.value))}
+                    style={{ width: '100%', accentColor: 'var(--amber)', cursor: 'pointer' }}
+                  />
+                </div>
+              )
+            })()}
             <div style={{ display: 'flex', gap: 16, marginTop: 12, justifyContent: 'center' }}>
               {[['🟢','LOW RISK','#00ff88'], ['🟡','MEDIUM RISK','#ffa500'], ['🔴','HIGH RISK','#ff4444']].map(([ic,lb,cl]) => (
                 <div key={lb} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontFamily: 'IBM Plex Mono', color: cl }}>

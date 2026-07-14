@@ -3,6 +3,7 @@ import { fetchDashboard, fetchQuotes } from '../api'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell
 } from 'recharts'
+import AnimatedNumber from '../components/AnimatedNumber'
 
 const CATEGORY_COLOR = { ETF: '#ffa500', Crypto: '#4da6ff', Commodity: '#00ff88' }
 
@@ -277,20 +278,40 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Summary KPIs */}
+      {/* Summary KPIs — with animated counters */}
       <div className="grid-4" style={{ marginBottom: 24 }}>
-        {[
-          { label: 'Assets Tracked',  value: validQuotes.length,    sub: 'ETFs · Crypto · Commodities' },
-          { label: 'Avg Volatility',  value: dashItems.length ? `${(dashItems.reduce((a,x) => a + x.rv_20d, 0) / dashItems.length * 100).toFixed(1)}%` : '—', sub: '20-day annualised' },
-          { label: 'Highest Vol',     value: dashItems[0]?.name ?? '—',  sub: `${dashItems[0]?.ticker ?? '—'} · ${((dashItems[0]?.rv_20d??0)*100).toFixed(1)}% annualised` },
-          { label: 'Lowest Vol',      value: dashItems.at(-1)?.name ?? '—', sub: `${dashItems.at(-1)?.ticker ?? '—'} · ${((dashItems.at(-1)?.rv_20d??0)*100).toFixed(1)}% annualised` },
-        ].map(kpi => (
-          <div key={kpi.label} className="card">
-            <div className="card-title">{kpi.label}</div>
-            <div className="card-value">{kpi.value}</div>
-            <div className="card-sub">{kpi.sub}</div>
+        <div className="card">
+          <div className="card-title">Assets Tracked</div>
+          <div className="card-value">
+            <AnimatedNumber value={validQuotes.length} decimals={0} duration={800} />
           </div>
-        ))}
+          <div className="card-sub">ETFs · Crypto · Commodities</div>
+        </div>
+        <div className="card">
+          <div className="card-title">Avg Volatility</div>
+          <div className="card-value" style={{ color: 'var(--amber)' }}>
+            {dashItems.length
+              ? <AnimatedNumber value={(dashItems.reduce((a,x) => a + x.rv_20d, 0) / dashItems.length * 100)} decimals={1} suffix="%" duration={1000} />
+              : '—'}
+          </div>
+          <div className="card-sub">20-day annualised</div>
+        </div>
+        <div className="card" style={{ borderLeft: '2px solid var(--red)' }}>
+          <div className="card-title">Highest Vol</div>
+          <div className="card-value" style={{ fontSize: 20, color: 'var(--red)' }}>{dashItems[0]?.name ?? '—'}</div>
+          <div className="card-sub">
+            {dashItems[0]?.ticker ?? '—'} ·{' '}
+            <AnimatedNumber value={(dashItems[0]?.rv_20d ?? 0) * 100} decimals={1} suffix="%" duration={1200} style={{ color: 'var(--red)' }} />
+          </div>
+        </div>
+        <div className="card" style={{ borderLeft: '2px solid var(--green)' }}>
+          <div className="card-title">Lowest Vol</div>
+          <div className="card-value" style={{ fontSize: 20, color: 'var(--green)' }}>{dashItems.at(-1)?.name ?? '—'}</div>
+          <div className="card-sub">
+            {dashItems.at(-1)?.ticker ?? '—'} ·{' '}
+            <AnimatedNumber value={(dashItems.at(-1)?.rv_20d ?? 0) * 100} decimals={1} suffix="%" duration={1200} style={{ color: 'var(--green)' }} />
+          </div>
+        </div>
       </div>
 
       {/* Volatility Heatmap Bar Chart */}
