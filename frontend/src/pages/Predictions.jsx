@@ -382,21 +382,29 @@ export default function Predictions() {
                     </div>
                   </div>
 
-                  {/* Noob explanations */}
-                  <div className="card" style={{ background: 'rgba(10,20,35,0.3)' }}>
-                    <div className="section-header" style={{ margin: '0 0 12px' }}>How it works (for beginners)</div>
+                  {/* 68% vs 95% Reliability Explanation */}
+                  <div className="card" style={{ borderLeft: '3px solid var(--amber)' }}>
+                    <div className="section-header" style={{ margin: '0 0 12px', color: 'var(--amber)' }}>
+                      68% vs 95% Confidence: Which is more Reliable?
+                    </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 11, lineHeight: 1.4, color: 'var(--text-secondary)' }}>
                       <div>
-                        <strong style={{ color: 'var(--amber)', fontFamily: 'var(--font-mono)' }}>68% Probability (1σ)</strong>
-                        <p style={{ marginTop: 2 }}>In statistics, 1 standard deviation contains 68% of possible price path outcomes. This represents the typical price boundaries of normal trading activity.</p>
+                        <strong style={{ color: 'var(--amber)', fontFamily: 'var(--font-mono)' }}>📈 68% Confidence (1σ) — Highly Reliable & Recommended</strong>
+                        <p style={{ marginTop: 3 }}>
+                          This represents the <strong>standard Expected Move</strong> (1 standard deviation). Option market makers and institutional desks focus primarily on 68% bounds. It is the most reliable guide for typical daily/weekly trading because it is mathematically optimized for standard variance.
+                        </p>
                       </div>
-                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8 }}>
-                        <strong style={{ color: 'var(--cyan)', fontFamily: 'var(--font-mono)' }}>95% Probability (2σ)</strong>
-                        <p style={{ marginTop: 2 }}>2 standard deviations cover 95% of expected outcomes. Breaking these bounds implies a highly anomalous market event (e.g. panic selloff or hype bubble).</p>
+                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 10 }}>
+                        <strong style={{ color: 'var(--cyan)', fontFamily: 'var(--font-mono)' }}>🛡️ 95% Confidence (2σ) — Worst-Case Stress Boundary</strong>
+                        <p style={{ marginTop: 3 }}>
+                          This represents extreme "tail risks" (2 standard deviations). While it covers 95% of outcomes, standard prediction models are less reliable at these boundaries because once price breaches a 2σ level, it is usually driven by unexpected geopolitical conflicts, rate hikes, or panic selloffs which math models cannot calculate.
+                        </p>
                       </div>
-                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8 }}>
-                        <strong style={{ color: 'var(--green)', fontFamily: 'var(--font-mono)' }}>GBM & Volatility Inputs</strong>
-                        <p style={{ marginTop: 2 }}>We take the ML model's volatility forecast and project the variance over {labelTime} using the square root of time scaling formula: <code style={{ color: 'var(--cyan)' }}>σ * √t</code>.</p>
+                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 10, background: 'rgba(255,165,0,0.02)', padding: 8, borderRadius: 6, border: '1px dashed rgba(255,165,0,0.1)' }}>
+                        <strong style={{ color: 'var(--green)', fontFamily: 'var(--font-mono)' }}>💡 MARI's Choice:</strong>
+                        <span style={{ marginLeft: 4 }}>
+                          For active risk management and pricing forecasts, **68% (1σ) is much more reliable and practical**. Use 95% solely for stress testing absolute worst-case downside limits.
+                        </span>
                       </div>
                     </div>
                   </div>
