@@ -209,6 +209,7 @@ export default function Predictions() {
             // Expected Single Price forecast (drift-adjusted)
             const mu_T = expectedReturn * t
             const s_exp = s0 * (1 + mu_T)
+            const expectedChangePct = ((s_exp - s0) / s0) * 100
 
             const volT = volDec * Math.sqrt(t)
             // expected moves in percentage
