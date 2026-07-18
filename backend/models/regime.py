@@ -101,7 +101,8 @@ def detect_regime(returns: pd.Series, n_regimes: int = 3) -> dict:
     for i in range(len(labels) - 1):
         trans[labels[i], labels[i + 1]] += 1
     row_sums = trans.sum(axis=1, keepdims=True)
-    trans_prob = (trans / (row_sums + 1e-8)).round(3).tolist()
+    # round(4) preserves rare transitions like 0.3% (LOW→HIGH) that round(3) would floor to 0.003
+    trans_prob = (trans / (row_sums + 1e-8)).round(4).tolist()
 
     # ── Regime duration stats ─────────────────────────────────
     durations = {r: [] for r in range(n_regimes)}

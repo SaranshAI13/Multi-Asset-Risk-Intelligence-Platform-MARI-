@@ -352,18 +352,31 @@ export default function Regime() {
                           <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: ['#00ff88','#ffa500','#ff4444'][i] }}>{label}</td>
                           {(data.transition_matrix[i] ?? [0,0,0]).map((p, j) => {
                             const isDiagonal = i === j;
-                            const bg = isDiagonal 
-                              ? (i === 0 ? 'rgba(0,255,136,0.12)' : i === 1 ? 'rgba(255,165,0,0.12)' : 'rgba(255,68,68,0.12)') 
-                              : (p > 0.05 ? 'rgba(255,255,255,0.02)' : 'transparent');
+                            // Rare off-diagonal non-zero: subtle amber highlight so analysts can spot rare transitions
+                            const isRareOffDiag = !isDiagonal && p > 0 && p < 0.05;
+                            const bg = isDiagonal
+                              ? (i === 0 ? 'rgba(0,255,136,0.12)' : i === 1 ? 'rgba(255,165,0,0.12)' : 'rgba(255,68,68,0.12)')
+                              : isRareOffDiag ? 'rgba(255,200,50,0.07)'
+                              : (p >= 0.05 ? 'rgba(255,255,255,0.03)' : 'transparent');
+                            // toFixed(1) shows "0.3%" instead of "0%" so rare transitions are visible
+                            const pctStr = p === 0
+                              ? '0.0%'
+                              : (p * 100) < 0.05
+                              ? '< 0.1%'
+                              : `${(p * 100).toFixed(1)}%`;
                             return (
                               <td key={j} style={{
                                 fontFamily: 'var(--font-mono)',
                                 fontWeight: isDiagonal ? 700 : 400,
-                                color: isDiagonal ? ['#00ff88','#ffa500','#ff4444'][i] : 'var(--text-secondary)',
+                                color: isDiagonal
+                                  ? ['#00ff88','#ffa500','#ff4444'][i]
+                                  : isRareOffDiag ? 'rgba(255,200,50,0.85)'
+                                  : 'var(--text-secondary)',
                                 backgroundColor: bg,
                                 transition: 'all 0.2s ease',
+                                fontSize: isRareOffDiag ? 11 : undefined,
                               }}>
-                                {(p * 100).toFixed(0)}%
+                                {pctStr}
                               </td>
                             );
                           })}
@@ -372,7 +385,7 @@ export default function Regime() {
                     </tbody>
                   </table>
                   <div style={{ marginTop: 12, fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8 }}>
-                    * Transition probabilities measure the likelihood of the market moving from one regime (row) to another (column) tomorrow. High diagonal values represent state stickiness (persistence).
+                    * P(i→j): probability of moving from regime i (row) to regime j (column) on the next trading day. Diagonal = persistence. Amber cells = rare but real transitions that were previously rounded to 0%.
                   </div>
                 </div>
 
@@ -383,26 +396,45 @@ export default function Regime() {
                     <thead>
                       <tr>
                         <th>Regime</th>
-                        <th>Avg Days</th>
+                        <th>Avg Days (observed)</th>
+                        <th>Markov Exp. Days</th>
                         <th>Max Days</th>
-                        <th>Occurrences (Visits)</th>
+                        <th>Occurrences</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {Object.entries(data.duration_stats ?? {}).map(([name, d]) => (
-                        <tr key={name}>
-                          <td style={{ fontFamily: 'var(--font-mono)', color: REGIME_COLOR[name] ?? 'var(--text-primary)', fontWeight: 700 }}>{name}</td>
-                          <td style={{ fontFamily: 'var(--font-mono)' }}>{d.avg_days} days</td>
-                          <td style={{ fontFamily: 'var(--font-mono)' }}>{d.max_days} days</td>
-                          <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--blue)', fontWeight: 700 }}>
-                            {d.occurrences ?? 0} {d.occurrences === 1 ? 'time' : 'times'}
-                          </td>
-                        </tr>
-                      ))}
+                      {(() => {
+                        // Map regime names to matrix indices (must match REGIME_LABELS in backend)
+                        const REGIME_IDX = { 'LOW RISK': 0, 'MEDIUM RISK': 1, 'HIGH RISK': 2 };
+                        return Object.entries(data.duration_stats ?? {}).map(([name, d]) => {
+                          const idx = REGIME_IDX[name];
+                          const pii = data.transition_matrix?.[idx]?.[idx] ?? 0;
+                          // Markov chain expected duration = 1 / (1 - P_ii)
+                          const markovExp = pii >= 0.9999 ? '> 999' : (1 / (1 - pii)).toFixed(1);
+                          const onlyOneRun = d.occurrences === 1;
+                          return (
+                            <tr key={name}>
+                              <td style={{ fontFamily: 'var(--font-mono)', color: REGIME_COLOR[name] ?? 'var(--text-primary)', fontWeight: 700 }}>{name}</td>
+                              <td style={{ fontFamily: 'var(--font-mono)' }}>
+                                {d.avg_days} days
+                                {/* avg = max when only 1 visit — add note so it doesn't look like a bug */}
+                                {onlyOneRun && <span style={{ fontSize: 9, color: 'rgba(255,200,50,0.7)', marginLeft: 4 }}>(only 1 run)</span>}
+                              </td>
+                              <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', fontWeight: 600 }}>
+                                {markovExp} days
+                              </td>
+                              <td style={{ fontFamily: 'var(--font-mono)' }}>{d.max_days} days</td>
+                              <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--blue)', fontWeight: 700 }}>
+                                {d.occurrences ?? 0} {d.occurrences === 1 ? 'time' : 'times'}
+                              </td>
+                            </tr>
+                          );
+                        });
+                      })()}
                     </tbody>
                   </table>
                   <div style={{ marginTop: 12, fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 8 }}>
-                    * Expected stay duration of each regime calculated from transition matrix stay probabilities. Occurrences indicate how many times the state was visited over the 2-year history.
+                    * Avg Days = observed mean run length from raw data. Markov Exp. Days = 1/(1-P<sub>ii</sub>) from the transition matrix — these should be similar; large gaps indicate non-stationarity. When occurrences = 1, Avg = Max by definition.
                   </div>
                 </div>
               </div>
